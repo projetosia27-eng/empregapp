@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "Resume": {
+      "title": "Resume",
+      "description": "A user's resume and career profile",
+      "type": "object",
+      "properties": {
+        "areaInteresse": { "type": "string" },
+        "habilidades": { "type": "string" },
+        "cidadeEstado": { "type": "string" },
+        "pdfUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["areaInteresse", "createdAt"]
+    },
+    "SavedJob": {
+      "title": "SavedJob",
+      "description": "A job the user saved or applied to",
+      "type": "object",
+      "properties": {
+        "titulo": { "type": "string" },
+        "empresa": { "type": "string" },
+        "url": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["titulo", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "users/{userId}/resumes/{resumeId}": {
+      "schema": { "$ref": "#/entities/Resume" },
+      "description": "User resumes"
+    },
+    "users/{userId}/savedJobs/{jobId}": {
+      "schema": { "$ref": "#/entities/SavedJob" },
+      "description": "Saved jobs"
+    }
+  }
+}

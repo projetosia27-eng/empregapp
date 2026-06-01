@@ -1,0 +1,1372 @@
+<!-- Theme Variable Guard -->
+<div [class]="theme() === 'dark' ? 'dark text-zinc-100 bg-zinc-950 font-sans' : 'text-zinc-800 bg-zinc-50 font-sans'" class="min-h-screen transition-colors duration-300">
+  
+  <!-- Global Toast Notifications -->
+  @if (toast(); as currentToast) {
+    <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-xl border animate-in slide-in-from-bottom duration-300 backdrop-blur-md"
+         [class]="currentToast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 
+                  currentToast.type === 'error' ? 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400' : 
+                  'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400'">
+      
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+           [class]="currentToast.type === 'success' ? 'bg-emerald-500 text-white' : 
+                    currentToast.type === 'error' ? 'bg-red-500 text-white' : 
+                    'bg-indigo-500 text-white'">
+        <mat-icon class="block text-[16px] w-[16px] h-[16px] leading-[16px] pb-0 text-white">
+          {{ currentToast.type === 'success' ? 'check_circle' : currentToast.type === 'error' ? 'error' : 'info' }}
+        </mat-icon>
+      </div>
+      <div>
+        <h5 class="text-xs font-black uppercase tracking-wider leading-none mb-0.5">Notificação</h5>
+        <p class="text-xs font-medium leading-normal">{{ currentToast.message }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Active Auto-Apply Loader Overlaid Panel -->
+  @if (isAutoApplying()) {
+    <div class="fixed inset-0 z-40 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl relative">
+        <div class="w-16 h-16 bg-indigo-50 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-md border border-indigo-100/10 scale-110">
+          <mat-icon class="animate-spin text-3xl h-8 w-8 !pt-1 leading-none">autorenew</mat-icon>
+        </div>
+        <span class="inline-block bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest mb-3">Robô de IA Ativo ★</span>
+        <h3 class="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 mb-2 leading-tight">Candidatura Expressa</h3>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-6 font-medium">Aplicando para <strong class="text-zinc-800 dark:text-zinc-200">{{ autoApplyJobTitle() }}</strong></p>
+        
+        <div class="bg-zinc-50 dark:bg-zinc-805/70 rounded-xl p-4 border border-zinc-200/50 dark:border-zinc-800 text-left">
+          <span class="block text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest mb-1.5">Status da Ação</span>
+          <p class="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            {{ autoApplyStatus() }}
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 1. SPLASH STATE -->
+  @if (viewState() === 'splash') {
+    <div class="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-indigo-700 to-violet-850 p-6 text-center select-none text-white animate-fade-in duration-300">
+      <div class="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center shadow-2xl backdrop-blur-md mb-6 border border-white/15 animate-pulse">
+        <mat-icon class="text-5xl h-12 w-12 !pt-3 leading-none text-white overflow-visible">work</mat-icon>
+      </div>
+      <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2 font-display">EmpregaJá</h1>
+      <p class="text-indigo-200 text-sm font-medium tracking-wide">O copiloto de IA para acelerar sua recolocação profissional</p>
+      
+      <!-- Modern Spinner -->
+      <div class="mt-12 flex flex-col items-center gap-3">
+        <div class="w-8 h-8 rounded-full border-3 border-white/20 border-t-white animate-spin"></div>
+        <span class="text-xs text-white/60 font-mono tracking-widest uppercase">Carregando Plataforma...</span>
+      </div>
+    </div>
+  }
+
+  <!-- 2. TUTORIAL STATE -->
+  @else if (viewState() === 'tutorial') {
+    <div class="min-h-screen w-full flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center relative overflow-hidden transition-all duration-300">
+        
+        <!-- Step indicators -->
+        <div class="flex justify-center gap-2 mb-8">
+          <div [class]="tutorialStep() === 0 ? 'bg-indigo-600 dark:bg-indigo-500 w-8' : 'bg-zinc-200 dark:bg-zinc-800 w-2.5'" class="h-2.5 rounded-full transition-all duration-300"></div>
+          <div [class]="tutorialStep() === 1 ? 'bg-indigo-600 dark:bg-indigo-500 w-8' : 'bg-zinc-200 dark:bg-zinc-800 w-2.5'" class="h-2.5 rounded-full transition-all duration-300"></div>
+          <div [class]="tutorialStep() === 2 ? 'bg-indigo-600 dark:bg-indigo-500 w-8' : 'bg-zinc-200 dark:bg-zinc-800 w-2.5'" class="h-2.5 rounded-full transition-all duration-300"></div>
+          <div [class]="tutorialStep() === 3 ? 'bg-indigo-600 dark:bg-indigo-500 w-8' : 'bg-zinc-200 dark:bg-zinc-800 w-2.5'" class="h-2.5 rounded-full transition-all duration-300"></div>
+        </div>
+
+        <!-- Dynamic Content Nodes -->
+        @if (tutorialStep() === 0) {
+          <div class="animate-in fade-in duration-300">
+            <div class="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <mat-icon class="text-3xl block leading-none">article</mat-icon>
+            </div>
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Currículo Inteligente ATS</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed text-balance">
+              Nossa tecnologia lê seu perfil profissional e gera um currículo otimizado com palavras-chave que passam facilmente nos robôs de triagem!
+            </p>
+          </div>
+        } @else if (tutorialStep() === 1) {
+          <div class="animate-in fade-in duration-300">
+            <div class="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <mat-icon class="text-3xl block leading-none">gps_fixed</mat-icon>
+            </div>
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Busca Direcionada</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed text-balance">
+              Identificamos as vagas reais no mercado que melhor se alinham aos seus interesses profissionais e cruzamos em segundos.
+            </p>
+          </div>
+        } @else if (tutorialStep() === 2) {
+          <div class="animate-in fade-in duration-300">
+            <div class="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <mat-icon class="text-3xl block leading-none">smart_toy</mat-icon>
+            </div>
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Treine com Simulações Reais</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed text-balance">
+              A Inteligência Artificial fará perguntas prováveis específicas para o cargo desejado e avaliará suas respostas com notas e feedback detalhado.
+            </p>
+          </div>
+        } @else if (tutorialStep() === 3) {
+          <div class="animate-in fade-in duration-300">
+            <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm animate-bounce">
+              <mat-icon class="text-3xl block leading-none">rocket_launch</mat-icon>
+            </div>
+            <h2 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">Vagas Automatizadas</h2>
+            <p class="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed text-balance">
+              Nosso sistema automatiza candidaturas e otimiza seu perfil de LinkedIn em um piscar de olhos no Plano Premium Ouro.
+            </p>
+          </div>
+        }
+
+        <!-- Bottom buttons -->
+        <div class="mt-8 flex items-center justify-between gap-4">
+          <button (click)="skipTutorial()" type="button" class="px-5 py-2.5 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl text-xs font-bold transition-all border-none cursor-pointer">
+            Pular Tutorial
+          </button>
+          
+          <button (click)="nextTutorialStep()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-indigo-600/15 flex items-center gap-1 border-none cursor-pointer">
+            <span>{{ tutorialStep() === 3 ? 'Começar Onboarding' : 'Próximo' }}</span>
+            <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">arrow_forward</mat-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- 3. MAIN APP ROUTER CORE -->
+  @else {
+    <div class="min-h-screen w-full flex items-center justify-center p-2 sm:p-4 md:p-8 print:p-0">
+      
+      <!-- Layout Card Wrapper containing both Steppers Onboarding and full-width dashboard portal -->
+      <div [class]="(viewState() === 'onboarding-auth' || viewState() === 'upload' || viewState() === 'form') 
+        ? 'w-full max-w-5xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200/50 dark:border-zinc-800 rounded-3xl flex flex-col md:flex-row overflow-hidden min-h-[580px]' 
+        : 'w-full max-w-5xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200/50 dark:border-zinc-800 rounded-3xl flex flex-col overflow-hidden min-h-[620px]'" 
+        id="main-frame-card">
+        
+        <!-- SIDEBAR ONLY: Visible for wizard forms steps -->
+        @if (viewState() === 'onboarding-auth' || viewState() === 'upload' || viewState() === 'form') {
+          <div class="hidden md:flex md:w-1/3 bg-linear-to-b from-indigo-600 to-violet-750 p-10 flex-col justify-between text-white shrink-0 border-r border-zinc-200/10">
+            <div class="space-y-8">
+              <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-md">
+                <mat-icon class="text-white block pb-0 leading-none">work</mat-icon>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-indigo-200 uppercase tracking-widest block mb-1">Copiloto Profissional</span>
+                <h1 class="text-3xl font-black tracking-tight mb-3">EmpregaJá</h1>
+                <p class="text-indigo-100/90 text-[13px] leading-relaxed">
+                  Criamos seu plano de recolocação em instantes com Inteligência Artificial. Aprovado em sistemas ATS e focado nas vagas que você procura.
+                </p>
+              </div>
+
+              <!-- Wizard stepper tracking milestones -->
+              <div class="space-y-4 pt-4 border-t border-white/10">
+                <div class="flex items-center gap-3">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all"
+                       [class]="viewState() === 'onboarding-auth' ? 'bg-white text-indigo-600 scale-105' : 'bg-white/20 text-indigo-200'">01</div>
+                  <span class="text-xs font-bold tracking-wide" [class]="viewState() === 'onboarding-auth' ? 'text-white' : 'text-indigo-200/60'">Cadastro Grátis</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all"
+                       [class]="viewState() === 'upload' ? 'bg-white text-indigo-600 scale-105' : 'bg-white/20 text-indigo-200'">02</div>
+                  <span class="text-xs font-bold tracking-wide" [class]="viewState() === 'upload' ? 'text-white' : 'text-indigo-200/60'">Upload de PDF</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all"
+                       [class]="viewState() === 'form' ? 'bg-white text-indigo-600 scale-105' : 'bg-white/20 text-indigo-200'">03</div>
+                  <span class="text-xs font-bold tracking-wide" [class]="viewState() === 'form' ? 'text-white' : 'text-indigo-200/60'">Revisão Profissional</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-[10px] text-indigo-200/40 pt-4 border-t border-white/5 font-semibold">
+              © 2026 EmpregaJá • Seus dados estão 100% criptografados e em conformidade com a LGPD.
+            </div>
+          </div>
+        }
+
+        <!-- CONTENT AREA CONTAINER -->
+        <div [class]="(viewState() === 'onboarding-auth' || viewState() === 'upload' || viewState() === 'form') 
+          ? 'w-full md:w-2/3 p-6 md:p-10 flex flex-col justify-between overflow-y-auto' 
+          : 'w-full p-6 md:p-10 flex flex-col justify-between bg-zinc-50 dark:bg-zinc-950/40 overflow-y-auto'"
+             id="core-viewport">
+          
+          <!-- STAGE A: WIZARD MULTI-STEP HEADERS -->
+          @if (viewState() === 'onboarding-auth' || viewState() === 'upload' || viewState() === 'form') {
+            <div class="mb-6 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/40 dark:border-zinc-800/65 rounded-2xl p-4 flex flex-col gap-2 shadow-xs">
+              <div class="flex justify-between items-center gap-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-500 animate-pulse"></span>
+                  <p class="text-xs font-black text-zinc-800 dark:text-zinc-200 uppercase tracking-widest">{{ currentStatusLabel() }}</p>
+                </div>
+                <div class="flex items-center gap-2 text-right">
+                  @if (!isOnline()) {
+                    <div class="flex items-center gap-1 bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-full text-[10px] font-bold border border-amber-500/20 animate-pulse">
+                      <mat-icon class="text-[11px] w-[11px] h-[11px] leading-[11px] block">cloud_off</mat-icon>
+                      <span>Modo Offline</span>
+                    </div>
+                  }
+                  <div class="flex items-center gap-1.5 bg-indigo-100/70 dark:bg-indigo-950/50 px-2.5 py-1 rounded-full text-[10px] font-extrabold text-indigo-700 dark:text-indigo-400">
+                    <mat-icon class="text-[11px] w-[11px] h-[11px] leading-[11px] block text-indigo-600 dark:text-indigo-400">emoji_events</mat-icon>
+                    <span>Membro Inicial • {{ xpCount() }} XP</span>
+                  </div>
+                </div>
+              </div>
+              <div class="w-full bg-zinc-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-indigo-600 dark:bg-indigo-500 h-1.5 rounded-full transition-all duration-300" [style.width.%]="currentPercent()"></div>
+              </div>
+            </div>
+          }
+
+          <!-- STAGE B: PORTAL ACTIVE HEADER (SaaS UNIVERSAL NAVBAR) -->
+          @if (viewState() === 'dashboard' || viewState() === 'resume' || viewState() === 'analysis' || viewState() === 'jobs' || viewState() === 'courses' || viewState() === 'interviewPrep' || viewState() === 'success') {
+            <header class="flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-850 pb-5 mb-8 print:hidden shrink-0">
+              <button (click)="goDashboard()" type="button" class="flex items-center gap-3 text-left bg-transparent border-none p-0 cursor-pointer focus:outline-none shrink-0" aria-label="Painel EmpregaJá">
+                <div class="w-10 h-10 bg-indigo-600 dark:bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-600/10">
+                  <mat-icon class="block leading-none">work</mat-icon>
+                </div>
+                <div>
+                  <h2 class="text-base font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">EmpregaJá</h2>
+                  <span class="text-[9px] text-indigo-600 dark:text-indigo-400 font-extrabold tracking-widest uppercase block leading-none">Portal Recruta-IA</span>
+                </div>
+              </button>
+
+              <!-- Content navigation tab switchers (Desktop) -->
+              <div class="hidden md:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/60 p-1 rounded-xl">
+                <button (click)="goDashboard()" [class]="viewState() === 'dashboard' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
+                  Painel
+                </button>
+                <button (click)="viewResume()" [class]="viewState() === 'resume' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
+                  Currículo
+                </button>
+                <button (click)="analyzeProfile()" [class]="viewState() === 'analysis' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
+                  Análise
+                </button>
+                <button (click)="searchJobs()" [class]="viewState() === 'jobs' || viewState() === 'interviewPrep' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
+                  Vagas e IA
+                </button>
+                <button (click)="recommendCourses()" [class]="viewState() === 'courses' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
+                  Cursos
+                </button>
+              </div>
+
+              <!-- User Hub Indicators -->
+              <div class="flex items-center gap-2.5">
+                @if (!isOnline()) {
+                  <div class="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/20 text-[10px] font-black animate-pulse">
+                    <mat-icon class="text-[13px] w-[13px] h-[13px] leading-[13px] block">cloud_off</mat-icon>
+                    <span>Modo Offline</span>
+                  </div>
+                }
+
+                <!-- XP Pill -->
+                <div class="hidden sm:flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/20 px-3 py-1.5 rounded-full border border-indigo-100/10 dark:border-indigo-900/10 text-[10px] font-black text-indigo-700 dark:text-indigo-400">
+                  <mat-icon class="text-[13px] w-[13px] h-[13px] leading-[13px] block">emoji_events</mat-icon>
+                  <span>{{ xpCount() }} XP • {{ candidateLevel().replace('Candidato ', '') }}</span>
+                </div>
+
+                <!-- Theme / Plan Action Buttons -->
+                @if (userPlan() === 'free') {
+                  <button type="button" (click)="triggerUpgrade('desbloquear todos os recursos pro')" class="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs px-3 py-1.5 rounded-xl transition-all cursor-pointer border-none shadow-xs shadow-amber-500/10 shrink-0">
+                    <mat-icon class="text-[12px] w-[12px] h-[12px] leading-[12px] block text-white pb-0">star</mat-icon>
+                    <span>Upgrade ★</span>
+                  </button>
+                } @else {
+                  <span class="inline-flex items-center gap-1 bg-gradient-to-r from-amber-550 to-yellow-500 text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-xs shadow-amber-550/10">
+                    <mat-icon class="text-[12px] w-[12px] h-[12px] leading-[12px] block text-white pb-0">star</mat-icon>
+                    <span>Premium ★</span>
+                  </span>
+                }
+
+                <button (click)="toggleTheme()" type="button" class="p-2 bg-zinc-150/70 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl text-zinc-500 dark:text-zinc-400 transition-colors border-none cursor-pointer" title="Escuro / Claro">
+                  @if (theme() === 'dark') {
+                    <mat-icon class="block">light_mode</mat-icon>
+                  } @else {
+                    <mat-icon class="block">dark_mode</mat-icon>
+                  }
+                </button>
+              </div>
+            </header>
+          }
+
+          <!-- VIEW STATES PORTS CONTROLLER -->
+          <div class="flex-1 flex flex-col justify-between">
+            
+            <!-- STAGE C1: ONBOARDING ACC VALUE SIGNUP -->
+            @if (viewState() === 'onboarding-auth') {
+              <div class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full py-2 animate-in fade-in duration-300">
+                <div class="text-center mb-6">
+                  <div class="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                    <mat-icon class="text-3xl block leading-none !pt-1">person_add</mat-icon>
+                  </div>
+                  <h2 class="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-150 mb-1">Crie seu cadastro grátis!</h2>
+                  <p class="text-zinc-500 dark:text-zinc-400 text-xs">Junte-se a +15.500 candidatos acelerados.</p>
+                </div>
+
+                <form [formGroup]="authForm" (ngSubmit)="submitAuth()" class="space-y-4">
+                  <div>
+                    <label for="auth-nome" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Nome Completo</label>
+                    <input id="auth-nome" type="text" formControlName="nome" placeholder="Seu nome"
+                           class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs focus:border-indigo-500 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all bg-zinc-50 dark:bg-zinc-900">
+                  </div>
+                  <div>
+                    <label for="auth-email" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">E-mail Profissional</label>
+                    <input id="auth-email" type="email" formControlName="email" placeholder="nome@empresa.com"
+                           class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs focus:border-indigo-500 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all bg-zinc-50 dark:bg-zinc-900">
+                  </div>
+                  <div>
+                    <label for="auth-senha" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Senha de Acesso</label>
+                    <input id="auth-senha" type="password" formControlName="senha" placeholder="Mínimo 6 caracteres"
+                           class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs focus:border-indigo-500 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all bg-zinc-50 dark:bg-zinc-900">
+                  </div>
+
+                  <button type="submit" [disabled]="authForm.invalid"
+                          class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold rounded-xl transition-all shadow-md shadow-indigo-600/15 cursor-pointer text-xs flex justify-center items-center gap-1.5 border-none">
+                    <span>Criar Conta & Baixar ATS</span>
+                    <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">arrow_forward</mat-icon>
+                  </button>
+                </form>
+
+                <div class="mt-6 pt-5 border-t border-zinc-150 dark:border-zinc-800 flex flex-col gap-2">
+                  <button type="button" (click)="enterAsGuest()"
+                          class="w-full py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 font-bold rounded-xl transition-colors text-xs text-zinc-700 dark:text-zinc-300 border-none cursor-pointer">
+                    Entrar como Visitante Grátis &rarr;
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- STAGE C2: DOCUMENT CV PDF PARSER UPLOADER -->
+            @else if (viewState() === 'upload') {
+              <div class="flex-1 flex flex-col justify-center animate-in fade-in duration-300">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-zinc-150 dark:border-zinc-850">
+                  <div class="flex items-center gap-3">
+                    <button type="button" (click)="goBackToAuth()" class="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border-none bg-transparent cursor-pointer" title="Voltar ao Cadastro">
+                      <mat-icon class="block">arrow_back</mat-icon>
+                    </button>
+                    <div class="text-left">
+                      <h2 class="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-150 leading-none mb-1">Upload do Currículo PDF</h2>
+                      <p class="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">Nossa IA preenche seu perfil em 5 segundos lendo seu currículo atual.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div 
+                  class="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl p-8 text-center transition-colors relative min-h-[220px]"
+                  [class.border-indigo-500]="isDragOver()"
+                  [class.bg-indigo-500/5]="isDragOver()"
+                  [class.border-zinc-250]="!isDragOver()"
+                  [class.bg-zinc-50/50]="!isDragOver()"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="onDragLeave($event)"
+                  (drop)="onDrop($event)">
+                  
+                  <input 
+                    type="file" 
+                    id="pdf-upload-file" 
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                    accept="application/pdf"
+                    (change)="onFileSelected($event)"
+                    [disabled]="isAnalyzing()">
+
+                  @if (isAnalyzing()) {
+                    <mat-icon class="animate-spin text-indigo-600 dark:text-indigo-400 text-4xl h-10 w-10 block mb-3">autorenew</mat-icon>
+                    <h3 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 mb-1">Mapeando competências...</h3>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Varrendo estruturas profissionais para formulários</p>
+                  } @else {
+                    <div class="w-12 h-12 bg-indigo-50 dark:bg-zinc-805/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-3">
+                      <mat-icon class="text-2xl h-6 w-6 block">cloud_upload</mat-icon>
+                    </div>
+                    <h3 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 mb-1">Importar arquivo PDF</h3>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mb-4">Arraste ou clique para buscar no celular/PC</p>
+                    <button type="button" class="px-5 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-semibold rounded-xl hover:bg-zinc-50 pointer-events-none shadow-xs">
+                      Buscar do Dispositivo
+                    </button>
+                  }
+                </div>
+
+                <div class="mt-6 text-center" [class.invisible]="isAnalyzing()">
+                  <button type="button" (click)="skipUpload()" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-block py-1">
+                    Preencher perfil manualmente &rarr;
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- STAGE C3: PROFILE FORM DETAILS REVIEWS -->
+            @else if (viewState() === 'form') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+                <div class="mb-4 flex items-center justify-between gap-3 border-b border-zinc-150 dark:border-zinc-850 pb-4">
+                  <div class="flex items-center gap-3">
+                    <button type="button" (click)="goBackToUpload()" class="p-2 -ml-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border-none bg-transparent cursor-pointer" title="Voltar para Upload">
+                      <mat-icon class="block">arrow_back</mat-icon>
+                    </button>
+                    <div class="text-left">
+                      <h2 class="text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">Instruções de Perfil Profissional</h2>
+                      <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Ajuste os dados de importação ou preencha manualmente o perfil.</p>
+                    </div>
+                  </div>
+                  <button type="button" (click)="goBackToUpload()" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-300 font-bold rounded-xl transition-all border mb-0 cursor-pointer text-xs border-zinc-200/50 dark:border-zinc-700/50">
+                    <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px] block">cloud_upload</mat-icon>
+                    <span>Enviar outro PDF</span>
+                  </button>
+                </div>
+
+                <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label for="profile-nome" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Nome Completo</label>
+                      <input id="profile-nome" type="text" formControlName="nome" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div>
+                      <label for="profile-email" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">E-mail Profissional</label>
+                      <input id="profile-email" type="email" formControlName="email" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div>
+                      <label for="profile-telefone" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Celular / WhatsApp</label>
+                      <input id="profile-telefone" type="tel" formControlName="telefone" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div>
+                      <label for="profile-cidadeEstado" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Cidade / Estado</label>
+                      <input id="profile-cidadeEstado" type="text" formControlName="cidadeEstado" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div>
+                      <label for="profile-areaInteresse" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Área Corporativa</label>
+                      <input id="profile-areaInteresse" type="text" formControlName="areaInteresse" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div>
+                      <label for="profile-ultimoCargo" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Último Cargo Ocupado</label>
+                      <input id="profile-ultimoCargo" type="text" formControlName="ultimoCargo" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div>
+                      <label for="profile-tempoExperiencia" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Tempo de Experiência</label>
+                      <select id="profile-tempoExperiencia" formControlName="tempoExperiencia" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                        <option value="" disabled>Escolha</option>
+                        <option value="Sem experiência">Sem experiência</option>
+                        <option value="Menos de 1 ano">Menos de 1 ano</option>
+                        <option value="1 a 3 anos">1 a 3 anos</option>
+                        <option value="3 a 5 anos">3 a 5 anos</option>
+                        <option value="Mais de 5 anos">Mais de 5 anos</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="profile-escolaridade" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Escolaridade</label>
+                      <select id="profile-escolaridade" formControlName="escolaridade" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                        <option value="" disabled>Escolha</option>
+                        <option value="Ensino Fundamental">Ensino Fundamental</option>
+                        <option value="Ensino Médio Completo">Ensino Médio Completo</option>
+                        <option value="Ensino Superior Completo">Ensino Superior Completo</option>
+                        <option value="Pós-graduação / Especialização">Pós-graduação / Especialização</option>
+                      </select>
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                      <label for="profile-habilidades" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Soft & Hard Skills principais (Separe por vírgulas)</label>
+                      <input id="profile-habilidades" type="text" formControlName="habilidades" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                      <label for="profile-experiencias" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Trajetória e Experiências Prévias</label>
+                      <textarea id="profile-experiencias" formControlName="experiencias" rows="2" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900"></textarea>
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                      <label for="profile-cursos" class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Cursos / Certificados Importantes</label>
+                      <textarea id="profile-cursos" formControlName="cursos" rows="2" class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50/50 dark:bg-zinc-900"></textarea>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2">
+                      <p class="block text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Preferência de Local de Trabalho</p>
+                      <div class="flex flex-wrap gap-5">
+                        <label class="flex items-center gap-2 cursor-pointer hover:opacity-90">
+                          <input type="radio" formControlName="tipoVaga" value="remota" class="w-4 h-4 accent-indigo-600 dark:accent-indigo-500 cursor-pointer">
+                          <span class="text-xs text-zinc-650 dark:text-zinc-300 font-semibold select-none">Remoto</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:opacity-90">
+                          <input type="radio" formControlName="tipoVaga" value="hibrida" class="w-4 h-4 accent-indigo-600 dark:accent-indigo-500 cursor-pointer">
+                          <span class="text-xs text-zinc-650 dark:text-zinc-300 font-semibold select-none">Híbrido</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:opacity-90">
+                          <input type="radio" formControlName="tipoVaga" value="presencial" class="w-4 h-4 accent-indigo-600 dark:accent-indigo-500 cursor-pointer">
+                          <span class="text-xs text-zinc-650 dark:text-zinc-300 font-semibold select-none">Presencial</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Submit bottom bar actions and reminders -->
+                  <div class="pt-6 border-t border-zinc-200/50 dark:border-zinc-800 space-y-4">
+                    @if (userPlan() === 'free') {
+                      <div class="p-3 bg-amber-500/10 border border-amber-500/20 text-zinc-700 dark:text-amber-400 text-xs rounded-xl flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                          <mat-icon class="text-amber-500 text-[18px] w-[18px] h-[18px] leading-[18px]">info</mat-icon>
+                          <span>Você tem <strong>{{ resumeGenerationsRemaining() }} geração grátis</strong> restante no plano gratuito.</span>
+                        </div>
+                        <button type="button" (click)="triggerUpgrade('gerar novos currículos ilimitados')" class="text-xs font-black text-amber-700 dark:text-amber-400 hover:underline border-none bg-transparent cursor-pointer shrink-0">Premium &rarr;</button>
+                      </div>
+                    } @else {
+                      <div class="p-3 bg-emerald-550/10 border border-emerald-550/20 text-emerald-800 dark:text-emerald-400 text-xs rounded-xl flex items-center gap-2 shadow-xs">
+                        <mat-icon class="text-emerald-500 text-[18px] w-[18px] h-[18px] leading-[18px]">check_circle</mat-icon>
+                        <span><strong>Premium Ouro Ativado:</strong> Gerações e análises inteligentes sem limites!</span>
+                      </div>
+                    }
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                      <p class="text-[10px] text-zinc-400 dark:text-zinc-500 max-w-sm">Ao autorizar o processamento, declaramos estar em conformidade estrita com todos os regulamentos de privacidade e LGPD.</p>
+                      <div class="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
+                        <button type="button" (click)="goBackToUpload()"
+                                class="w-full sm:w-auto px-5 py-3 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-300 font-extrabold rounded-xl transition-all flex justify-center items-center gap-1.5 border-none cursor-pointer text-xs">
+                          <mat-icon class="text-[16px] w-[16px] h-[16px] leading-[16px]">arrow_back</mat-icon>
+                          <span>Voltar para Upload</span>
+                        </button>
+                        <button type="submit" [disabled]="isSubmitting()"
+                                class="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition-all shadow-md shadow-indigo-600/15 flex justify-center items-center gap-2 border-none cursor-pointer text-xs">
+                          @if (isSubmitting()) {
+                            <mat-icon class="animate-spin text-white">autorenew</mat-icon>
+                            <span>Processando dados...</span>
+                          } @else {
+                            <span>Gerar Perfil de Impacto</span>
+                            <mat-icon class="text-[16px] w-[16px] h-[16px] leading-[16px]">rocket_launch</mat-icon>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            }
+
+            <!-- STAGE C4: PROFILE PRE-GENERATED CONTRATADO SUCCESS -->
+            @else if (viewState() === 'success') {
+              <div class="flex-1 flex flex-col items-center justify-center text-center py-10 animate-in fade-in zoom-in duration-300">
+                <div class="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mb-5 shadow-lg">
+                  <mat-icon class="text-3xl block leading-none">check_circle</mat-icon>
+                </div>
+                <h2 class="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-2 leading-tight">Perfil Criado e Otimizado!</h2>
+                <p class="text-zinc-500 dark:text-zinc-400 text-sm mb-8 max-w-sm">
+                  Cruzamos os dados profissionais com excelentes diretrizes do mercado. Explore o painel e comece a busca.
+                </p>
+                
+                <div class="flex flex-wrap gap-4 justify-center">
+                  <button (click)="goDashboard()" type="button" class="px-6 py-3 bg-indigo-600 text-white font-extrabold rounded-xl flex items-center gap-1.5 shadow-md shadow-indigo-600/15 cursor-pointer border-none">
+                    <span>Acessar Meu Painel</span>
+                    <mat-icon>space_dashboard</mat-icon>
+                  </button>
+                  <button (click)="resetForm()" type="button" class="px-6 py-3 bg-zinc-200 hover:bg-zinc-250 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-800 dark:text-zinc-200 font-bold rounded-xl cursor-pointer border-none transition-colors">
+                    Gerar Novo Perfil
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- STAGE C5: THE ATS GENERATED RESUME CORE WRITER DISPLAY -->
+            @else if (viewState() === 'resume') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+                <div class="flex items-end justify-between mb-5 flex-wrap gap-3">
+                  <div>
+                    <h2 class="text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-100 leading-none mb-1">Currículo Otimizado por Inteligência Artificial</h2>
+                    <p class="text-xs text-zinc-400 dark:text-zinc-500">Formato ATS recomendado para alta conversão em entrevistas.</p>
+                  </div>
+
+                  <div class="flex gap-2 flex-wrap">
+                    <button (click)="editResume()" type="button" class="px-3.5 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all border border-zinc-200 dark:border-zinc-800 flex items-center gap-1 cursor-pointer bg-white dark:bg-zinc-900">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">tune</mat-icon>
+                      <span>Ajustar</span>
+                    </button>
+                    <button (click)="downloadPdf()" type="button" class="px-3.5 py-2 bg-indigo-650 text-white hover:bg-indigo-700 rounded-xl text-xs font-extrabold flex items-center gap-1 cursor-pointer border-none shadow-xs">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">file_download</mat-icon>
+                      <span>Baixar PDF</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- A4 High Fidelity Paper Mockup -->
+                <div class="flex-1 overflow-y-auto mb-6 bg-zinc-100 dark:bg-zinc-900 shadow-inner rounded-2xl p-4 md:p-6 text-left" id="resume-container-sheet">
+                  <div class="max-w-[210mm] mx-auto bg-white text-zinc-900 p-8 md:p-12 border border-zinc-200 rounded-[4px] shadow-sm font-sans text-xs flex flex-col gap-6" id="cv-print-area">
+                    
+                    <!-- Header -->
+                    <div class="border-b-2 border-zinc-900 pb-5 text-center">
+                      <h3 class="text-2xl font-black uppercase tracking-tight text-zinc-900 mb-1.5">{{ profileForm.value.nome }}</h3>
+                      <p class="text-zinc-500 text-[11px] font-bold tracking-wide uppercase mb-3">{{ profileForm.value.ultimoCargo || profileForm.value.areaInteresse }}</p>
+                      <div class="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-zinc-600 font-semibold">
+                        <span>{{ profileForm.value.email }}</span>
+                        <span>•</span>
+                        <span>{{ profileForm.value.telefone }}</span>
+                        <span>•</span>
+                        <span>{{ profileForm.value.cidadeEstado }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Layout Content Areas -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      
+                      <!-- Left side col -->
+                      <div class="md:col-span-1 space-y-5">
+                        
+                        <!-- Objective / Resumo -->
+                        <div class="space-y-2">
+                          <h4 class="text-[11px] font-black uppercase tracking-wider text-zinc-900 border-b border-zinc-300 pb-1">Perfil Profissional</h4>
+                          <p class="text-zinc-600 text-[11px] leading-relaxed whitespace-pre-wrap">{{ generatedDocs()?.resumo || 'Perfil dinâmico focado em alcançar resultados de alta excelência no segmento corporativo.' }}</p>
+                        </div>
+
+                        <!-- Abilities -->
+                        <div class="space-y-2">
+                          <h4 class="text-[11px] font-black uppercase tracking-wider text-zinc-900 border-b border-zinc-300 pb-1">Habilidades Principais</h4>
+                          <div class="flex flex-wrap gap-1.5 pt-1">
+                            @for (skill of (profileForm.value.habilidades || '').split(','); track skill) {
+                              @if (skill.trim()) {
+                                <span class="bg-zinc-100 text-zinc-800 text-[10px] font-bold px-2.5 py-1 rounded-[4px] border border-zinc-200">{{ skill.trim() }}</span>
+                              }
+                            }
+                          </div>
+                        </div>
+
+                        <!-- Schooling -->
+                        <div class="space-y-2">
+                          <h4 class="text-[11px] font-black uppercase tracking-wider text-zinc-900 border-b border-zinc-300 pb-1">Formação Acadêmica</h4>
+                          <p class="font-bold text-zinc-800 text-[11px]">{{ profileForm.value.escolaridade }}</p>
+                          <p class="text-zinc-500 text-[10px] leading-tight">Instituição Concluída / Titulação homologada</p>
+                        </div>
+                      </div>
+
+                      <!-- Right side big col (Experiences / Objectives) -->
+                      <div class="md:col-span-2 space-y-5">
+                        
+                        <!-- Objective target -->
+                        <div class="space-y-2">
+                          <h4 class="text-[11px] font-black uppercase tracking-wider text-zinc-900 border-b border-zinc-300 pb-1">Objetivo de Carreira</h4>
+                          <p class="text-zinc-600 text-[11px] leading-relaxed whitespace-pre-wrap">{{ generatedDocs()?.objetivo || 'Atuar no modelo preferido de contratação alinhando as melhores práticas do segmento.' }}</p>
+                        </div>
+
+                        <!-- Experiences -->
+                        <div class="space-y-3">
+                          <h4 class="text-[11px] font-black uppercase tracking-wider text-zinc-900 border-b border-zinc-300 pb-1">Trajetória e Experiências</h4>
+                          <div class="space-y-3">
+                            <p class="text-zinc-700 text-[11px] leading-relaxed whitespace-pre-wrap">{{ profileForm.value.experiencias }}</p>
+                          </div>
+                        </div>
+
+                        <!-- Courses Timeline info -->
+                        @if (profileForm.value.cursos) {
+                          <div class="space-y-2">
+                            <h4 class="text-[11px] font-black uppercase tracking-wider text-zinc-900 border-b border-zinc-300 pb-1">Cursos & Certificados Complementares</h4>
+                            <p class="text-zinc-650 text-[11px] leading-relaxed whitespace-pre-wrap">{{ profileForm.value.cursos }}</p>
+                          </div>
+                        }
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Navigation helpers -->
+                <div class="flex sm:justify-between items-center bg-zinc-100 dark:bg-zinc-900/60 p-4 border border-zinc-200/50 dark:border-zinc-850 rounded-2xl gap-4 flex-wrap">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">Seu currículo confere 120 XP e pontuação ATS recomendada!</span>
+                  </div>
+                  <div class="flex gap-2">
+                    <button (click)="goDashboard()" type="button" class="px-5 py-2.5 text-zinc-500 hover:text-zinc-750 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 font-bold rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">space_dashboard</mat-icon>
+                      <span>Voltar ao Painel</span>
+                    </button>
+                    <button (click)="searchJobs()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none shadow-md shadow-indigo-600/15 cursor-pointer">
+                      <span>Buscar Vagas Compatíveis</span>
+                      <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">search</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- STAGE C6: ATS PORTAL AI DETAILED ANALYSIS -->
+            @else if (viewState() === 'analysis') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+                <div class="mb-5">
+                  <h2 class="text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">Diagnóstico de Empregabilidade e Auditoria IA</h2>
+                  <p class="text-xs text-zinc-400 dark:text-zinc-500">Análise profunda cruzando requisitos mais solicitados por recrutadores.</p>
+                </div>
+
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 overflow-y-auto max-h-[360px] pr-1" id="analysis-bento">
+                  
+                  <!-- Strengths -->
+                  <div class="bg-emerald-500/5 border border-emerald-500/20 p-5 rounded-3xl text-left">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-450 mb-3 flex items-center gap-1.5 leading-none">
+                      <mat-icon class="text-[15px] w-[15px] h-[15px] leading-[15px]">check_circle</mat-icon>
+                      Pontos Fortes Identificados
+                    </h4>
+                    <ul class="space-y-2.5">
+                      @for (ponto of analysisDocs()?.pontosFortes; track ponto) {
+                        <li class="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-normal flex items-start gap-2">
+                          <span class="text-emerald-555 mt-0.5 font-bold shrink-0">&bull;</span>
+                          <span>{{ ponto }}</span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+
+                  <!-- Keyword match -->
+                  <div class="bg-indigo-500/5 border border-indigo-500/20 p-5 rounded-3xl text-left">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-1.5 leading-none">
+                      <mat-icon class="text-[15px] w-[15px] h-[15px] leading-[15px]">tag</mat-icon>
+                      Keywords de Alta Triagem ATS
+                    </h4>
+                    <div class="flex flex-wrap gap-1.5">
+                      @for (tag of analysisDocs()?.palavrasChave; track tag) {
+                        <span class="bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-black px-2.5 py-1 rounded-xl border border-indigo-200/10">{{ tag }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Recommended job terms -->
+                  <div class="bg-sky-500/5 border border-sky-500/20 p-5 rounded-3xl text-left">
+                    <h4 class="text-xs font-black uppercase tracking-widest text-sky-600 dark:text-sky-400 mb-3 flex items-center gap-1.5 leading-none">
+                      <mat-icon class="text-[15px] w-[15px] h-[15px] leading-[15px]">work</mat-icon>
+                      Cargos & Segmentos Recomendados
+                    </h4>
+                    <ul class="space-y-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      @for (cargo of analysisDocs()?.cargosRecomendados; track cargo) {
+                        <li class="flex items-center gap-2">
+                          <mat-icon class="text-sky-500 text-[14px] w-[14px] h-[14px] leading-[14px]">chevron_right</mat-icon>
+                          <span>{{ cargo }}</span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+
+                  <!-- Premium lockout Advanced improvements report and Checklist -->
+                  <div class="border p-5 rounded-3xl text-left relative overflow-hidden flex flex-col justify-between"
+                       [class]="userPlan() === 'premium' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-805'">
+                    
+                    @if (userPlan() === 'free') {
+                      <!-- Locked overlay -->
+                      <div class="absolute inset-0 bg-zinc-950/20 dark:bg-zinc-950/50 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center z-10 animate-fade-in duration-300">
+                        <mat-icon class="text-amber-500 text-3xl mb-1.5">lock</mat-icon>
+                        <h4 class="text-xs font-extrabold text-white leading-tight uppercase tracking-wider">Oportunidades Premium</h4>
+                        <p class="text-[10px] text-zinc-205 dark:text-zinc-400 mt-1 mb-3.5 max-w-[220px]">Desbloqueie o Checklist Avançado de Melhorias de IA do seu perfil.</p>
+                        <button (click)="triggerUpgrade('desbloquear as oportunidades de melhoria de perfil por IA')" type="button" class="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-extrabold text-[10px] rounded-lg tracking-widest uppercase border-none cursor-pointer shadow-sm">
+                          Ativar Pro ★ R$ 19,90
+                        </button>
+                      </div>
+                    }
+
+                    <div>
+                      <h4 class="text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3 flex items-center gap-1.5 leading-none">
+                        <mat-icon class="text-[15px] w-[15px] h-[15px] leading-[15px]">tips_and_updates</mat-icon>
+                        Checklist IA de Melhorias Básicas
+                      </h4>
+                      <ul class="space-y-2.5">
+                        @for (item of analysisDocs()?.oQueMelhorar; track item) {
+                          <li class="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed flex items-start gap-2">
+                            <span class="text-amber-505 mt-0.5 font-bold shrink-0">&bull;</span>
+                            <span>{{ item }}</span>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="flex justify-between items-center gap-4 bg-zinc-100 dark:bg-zinc-900/60 p-4 border border-zinc-200/50 dark:border-zinc-850 rounded-2xl flex-wrap">
+                  <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">&bull; Concluir checklists garante aumento de +100 XP extras.</span>
+                  <div class="flex gap-2">
+                    <button (click)="goDashboard()" type="button" class="px-5 py-2.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-850 font-bold rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">space_dashboard</mat-icon>
+                      <span>Voltar</span>
+                    </button>
+                    <button (click)="searchJobs()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none shadow-md shadow-indigo-600/15 cursor-pointer">
+                      <span>Buscar Vagas</span>
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            }
+
+            <!-- STAGE C7: JOBS MATCH BOARD & ONE-CLICK APPLY LISTINGS -->
+            @else if (viewState() === 'jobs') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+                <div class="flex justify-between items-end mb-5 flex-wrap gap-2">
+                  <div>
+                    <h2 class="text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">Painel Oportunidades & Match de IA</h2>
+                    <p class="text-xs text-zinc-400 dark:text-zinc-500">Buscamos em tempo real e de forma automatizada no LinkedIn, Catho, Gupy, etc, vagas verídicas que correspondam ao seu perfil.</p>
+                  </div>
+                  
+                  <button (click)="goDashboard()" type="button" class="px-3.5 py-1.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-850 rounded-xl text-xs font-bold flex items-center gap-0.5 border-none cursor-pointer">
+                    <mat-icon class="text-[14px] w-[14px] h-[14px]">space_dashboard</mat-icon>
+                    <span>Dashboard</span>
+                  </button>
+                </div>
+
+                <!-- Job list scroll wrap -->
+                <div class="flex-1 space-y-4 overflow-y-auto mb-6 max-h-[340px] pr-1" id="jobs-cards-bento-holder">
+                  @for (job of jobsList(); track job.titulo; let idx = $index) {
+                    
+                    <!-- Standard or premium locking indicator block -->
+                    <div class="border rounded-2xl p-5 text-left relative overflow-hidden transition-all duration-300"
+                         [class]="idx >= 2 && userPlan() === 'free' ? 'bg-zinc-100/30 dark:bg-zinc-900/30 border-zinc-200/50 dark:border-zinc-850/50' : 'bg-white dark:bg-zinc-900 hover:border-indigo-500/30 hover:shadow-md dark:border-zinc-800'">
+                      
+                      @if (idx >= 2 && userPlan() === 'free') {
+                        <!-- Frosted locker wrapper overlay -->
+                        <div class="absolute inset-0 bg-zinc-950/20 dark:bg-zinc-950/60 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center z-10 animate-fade-in duration-300">
+                          <mat-icon class="text-amber-500 text-2xl mb-1 shrink-0">lock</mat-icon>
+                          <h4 class="text-xs font-black text-white uppercase tracking-wider mb-0.5">Vaga Exclusiva Premium ★</h4>
+                          <p class="text-[10px] text-zinc-250 dark:text-zinc-350 mb-3 max-w-[280px]">Disponibilizada apenas no plano de contratação de alta conversão.</p>
+                          <button (click)="triggerUpgrade('desbloquear acesso a todas as vagas recomendadas')" type="button" class="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-extrabold text-[10px] rounded-lg tracking-widest uppercase border-none cursor-pointer shadow-sm">
+                            Upgrade Premium ★ R$ 19,90/mês
+                          </button>
+                        </div>
+                      }
+
+                      <div class="flex justify-between items-start flex-wrap gap-3 mb-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-extrabold text-xs flex items-center justify-center shrink-0">
+                            {{ job.empresa.charAt(0) }}
+                          </div>
+                          <div>
+                            <h3 class="text-sm font-black text-zinc-900 dark:text-zinc-150 leading-tight">{{ job.titulo }}</h3>
+                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 font-bold mt-0.5">{{ job.empresa }} &bull; {{ job.localizacao }}</p>
+                          </div>
+                        </div>
+
+                        <!-- Match badges of IA -->
+                        <div class="flex items-center gap-2">
+                          <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                                [class]="job.compatibilidade >= 80 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-450' : job.compatibilidade >= 60 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-450' : 'bg-red-500/15 text-red-600 dark:text-red-450'">
+                            {{ job.compatibilidade }}% Match IA
+                          </span>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-zinc-100 dark:bg-zinc-800 text-zinc-550 dark:text-zinc-300 uppercase tracking-widest">{{ job.tipoTrabalho }}</span>
+                        </div>
+                      </div>
+
+                      <p class="text-xs text-zinc-650 dark:text-zinc-350 leading-relaxed mb-4">{{ job.explicacao }}</p>
+
+                      <!-- Key criteria tagging -->
+                      <div class="flex flex-wrap gap-1.5 mb-5 select-none">
+                        @for (req of job.requisitos; track req) {
+                          <span class="bg-zinc-100 dark:bg-zinc-805 text-zinc-700 dark:text-zinc-300 text-[9px] font-bold px-2 py-0.5 rounded-md border border-zinc-200/50 dark:border-zinc-800">{{ req }}</span>
+                        }
+                      </div>
+
+                      <!-- CTAs for each CV item -->
+                      <div class="pt-4 border-t border-zinc-100 dark:border-zinc-805/70 flex justify-between items-center gap-4 flex-wrap">
+                        <button (click)="saveJob(job)" type="button" class="text-xs font-semibold text-zinc-400 dark:text-zinc-550 hover:text-zinc-650 dark:hover:text-zinc-300 flex items-center gap-0.5 border-none bg-transparent cursor-pointer py-1.5" title="Salvar vaga">
+                          <mat-icon class="text-[16px] w-[16px] h-[16px]">bookmark_border</mat-icon>
+                          <span>Salvar interesse</span>
+                        </button>
+                        
+                        <div class="flex gap-2">
+                          @if (job.url) {
+                            <a [href]="job.url" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer bg-white dark:bg-zinc-900 no-underline">
+                              <span>Ver Vaga</span>
+                              <mat-icon class="text-[14px] w-[14px] h-[14px]">open_in_new</mat-icon>
+                            </a>
+                          }
+                          <button (click)="prepareInterview(job)" type="button" class="px-3.5 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer bg-white dark:bg-zinc-900">
+                            <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">smart_toy</mat-icon>
+                            <span>Treinar Entrevista</span>
+                          </button>
+                          <button (click)="runAutoApply(job)" type="button" class="px-4 py-2 bg-indigo-650 hover:bg-indigo-750 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md shadow-indigo-650/10 cursor-pointer border-none">
+                            <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px] text-white">bolt</mat-icon>
+                            <span>Candidatura Rápida</span>
+                          </button>
+                        </div>
+                      </div>
+
+                    </div>
+                  }
+                </div>
+
+                <!-- Footer helpful info navigation stats -->
+                <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/60 p-4 border border-zinc-200/50 dark:border-zinc-850 rounded-2xl flex-wrap gap-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">Completar candidaturas acumula bônus de +80 XP no perfil.</span>
+                  </div>
+                  <button (click)="recommendCourses()" type="button" class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline border-none bg-transparent cursor-pointer">Ver habilidades recomendadas &rarr;</button>
+                </div>
+              </div>
+            }
+
+            <!-- STAGE C8: SKILLS COURSE RECOMMENDATION CURRICULAM TIMELINE -->
+            @else if (viewState() === 'courses') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+                <div class="mb-5 flex justify-between items-end flex-wrap gap-3">
+                  <div>
+                    <h2 class="text-lg font-black tracking-tight text-zinc-900 dark:text-zinc-100 mb-1">Trilha de Qualificação e Cursos Recomendados</h2>
+                    <p class="text-xs text-zinc-400 dark:text-zinc-500 font-medium">Trilha sugerida para suprir gaps profissionais e aumentar o ATS Score.</p>
+                  </div>
+                  <button (click)="goDashboard()" type="button" class="px-3.5 py-1.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-850 rounded-xl text-xs font-bold flex items-center gap-0.5 border-none cursor-pointer">
+                    <mat-icon class="text-[14px] w-[14px] h-[14px]">space_dashboard</mat-icon>
+                    <span>Dashboard</span>
+                  </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto mb-6 max-h-[340px] pr-1 pl-2 text-left" id="courses-timeline-box shadow-inner">
+                  <div class="border-l-2 border-indigo-200 dark:border-indigo-900 ml-4 pl-6 py-2 space-y-8">
+                    @for (stage of courseTimeline(); track stage.mes) {
+                      <div class="relative">
+                        
+                        <!-- Bullets markers -->
+                        <div class="absolute -left-[31px] top-1 w-4 h-4 bg-white dark:bg-zinc-950 border-3 border-indigo-600 dark:border-indigo-500 rounded-full flex items-center justify-center shadow-xs"></div>
+
+                        <span class="inline-block bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest mb-1.5">{{ stage.mes }}</span>
+                        <h3 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-150 leading-tight mb-3">Foco: {{ stage.foco }}</h3>
+
+                        <!-- Courses grid in this stage -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          @for (course of stage.cursos; track course.nome) {
+                            <div class="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 p-4 rounded-2xl flex flex-col justify-between hover:border-indigo-400/30 transition-all shadow-xs">
+                              <div class="space-y-1">
+                                <span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-400 text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider inline-block mb-1.5">{{ course.plataforma }}</span>
+                                <h4 class="text-xs font-extrabold text-zinc-900 dark:text-zinc-150 leading-snug">{{ course.nome }}</h4>
+                                <p class="text-[10px] text-zinc-400 dark:text-zinc-500 leading-tight">Duração: {{ course.duracao }} &bull; Competência: <strong>{{ course.habilidadeDesenvolvida }}</strong></p>
+                                <p class="text-[11px] text-zinc-505 dark:text-zinc-400 leading-snug pt-1 mb-3.5">{{ course.justificativa }}</p>
+                              </div>
+
+                              <div class="pt-3 border-t border-zinc-100 dark:border-zinc-805/70 flex justify-between items-center gap-1.5 flex-wrap">
+                                <span class="text-[10px] font-bold text-indigo-550 dark:text-indigo-400">+150 XP de Qualificação</span>
+                                <a [href]="course.linkUrl" target="_blank" class="px-3.5 py-1.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 font-bold rounded-lg text-[11.5px] hover:scale-102 hover:shadow-xs transition-all flex items-center gap-0.5 shrink-0 decoration-none">
+                                  <span>Inscrever Grátis</span>
+                                  <mat-icon class="text-[12px] w-[12px] h-[12px] leading-[12px]">open_in_new</mat-icon>
+                                </a>
+                              </div>
+                            </div>
+                          }
+                        </div>
+
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/60 p-4 border border-zinc-200/50 dark:border-zinc-850 rounded-2xl flex-wrap gap-4">
+                  <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">&bull; Concluir certificados complementares desbloqueia conquistas.</span>
+                  <div class="flex gap-2">
+                    <button (click)="searchJobs()" type="button" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer">
+                      <span>Buscar Vagas Compatíveis</span>
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            }
+
+            <!-- STAGE C9: EVALUATIVE CHAT INTERVIEW PREPARATION SIMULATOR -->
+            @else if (viewState() === 'interviewPrep') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+                <div class="flex justify-between items-end mb-4 flex-wrap gap-2">
+                  <div>
+                    <h2 class="text-sm font-black tracking-tight text-indigo-650 dark:text-indigo-400 leading-none mb-1 uppercase">Simulador de Entrevista por IA</h2>
+                    <h3 class="text-base font-black text-zinc-900 dark:text-zinc-100 leading-tight">Vaga de {{ selectedJobForPrep()?.titulo }}</h3>
+                  </div>
+                  
+                  <div class="flex gap-2">
+                    <button (click)="backToJobs()" type="button" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-250 dark:hover:bg-zinc-850 rounded-xl text-xs font-bold flex items-center border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">arrow_back</mat-icon>
+                      <span>Vagas</span>
+                    </button>
+                    <button (click)="goDashboard()" type="button" class="px-3 py-1.5 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-250 dark:hover:bg-zinc-850 rounded-xl text-xs font-bold flex items-center border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">space_dashboard</mat-icon>
+                      <span>Painel</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Guidance and simulator row -->
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-5 mb-5 text-left overflow-y-auto max-h-[340px]">
+                  
+                  <!-- Left side checklist guidance -->
+                  <div class="md:col-span-1 space-y-4 bg-zinc-100 dark:bg-zinc-900/60 p-4 rounded-2xl border border-zinc-200/50 dark:border-zinc-855">
+                    <div>
+                      <h4 class="text-[10px] font-black uppercase tracking-wider text-green-700 dark:text-emerald-400 mb-2 flex items-center gap-1">
+                        <mat-icon class="text-[13px] w-[13px] h-[13px]">check_circle_outline</mat-icon>
+                        Pontos para Destacar
+                      </h4>
+                      <ul class="space-y-1 text-[11px] font-semibold text-zinc-650 dark:text-zinc-350">
+                        @for (tip of interviewPrepData()?.pontosDestacar; track tip) {
+                          <li>&bull; {{ tip }}</li>
+                        }
+                      </ul>
+                    </div>
+
+                    <div class="border-t border-zinc-200 dark:border-zinc-800 pt-3">
+                      <h4 class="text-[10px] font-black uppercase tracking-wider text-red-650 dark:text-red-400 mb-2 flex items-center gap-1">
+                        <mat-icon class="text-[13px] w-[13px] h-[13px]">highlight_off</mat-icon>
+                        Erros comuns para Evitar
+                      </h4>
+                      <ul class="space-y-1 text-[11px] font-semibold text-zinc-650 dark:text-zinc-350">
+                        @for (avoid of interviewPrepData()?.oQueEvitar; track avoid) {
+                          <li>&bull; {{ avoid }}</li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Active simulator questions and evaluation panel -->
+                  <div class="md:col-span-2 flex flex-col justify-between bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-805 rounded-2xl p-5 relative">
+                    
+                    <!-- Question navigation selection -->
+                    <div class="mb-4">
+                      <span class="block text-[8px] font-extrabold uppercase tracking-widest text-zinc-400 mb-2">Selecione uma Pergunta para Treinar:</span>
+                      <div class="flex flex-wrap gap-1.5">
+                        @for (item of interviewPrepData()?.perguntasProvaveis; track item.pergunta; let i = $index) {
+                          <button (click)="startSimulation(i)" type="button" [class]="activeQuestionIndex() === i ? 'px-2.5 py-1 bg-indigo-600 text-white font-extrabold rounded-lg text-[10px] border-none shadow-xs cursor-pointer' : 'px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-300 font-bold rounded-lg text-[10px] hover:bg-zinc-150 hover:dark:bg-zinc-750 transition-colors border-none cursor-pointer'">
+                            Q{{ i + 1 }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Active dialog -->
+                    <div class="flex-1 flex flex-col justify-between gap-4">
+                      @if (activeQuestionIndex() >= 0) {
+                        
+                        <!-- Question bubble -->
+                        <div class="bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/10 p-3.5 rounded-2xl rounded-tl-none">
+                          <span class="block text-[8px] font-extrabold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-1">Recrutador IA</span>
+                          <p class="text-xs font-bold text-zinc-800 dark:text-zinc-150 leading-relaxed">{{ interviewPrepData()?.perguntasProvaveis?.[activeQuestionIndex()]?.pergunta }}</p>
+                        </div>
+
+                        <!-- Tip box popover -->
+                        <div class="p-2.5 bg-yellow-500/5 border border-yellow-500/20 rounded-xl flex gap-1.5 items-start">
+                          <mat-icon class="text-yellow-600 dark:text-yellow-450 text-[14px] w-[14px] h-[14px] mt-0.5">lightbulb</mat-icon>
+                          <div>
+                            <span class="block text-[9px] font-extrabold text-yellow-750 dark:text-yellow-450 uppercase tracking-widest leading-none mb-0.5">Diretriz IA de Resposta</span>
+                            <p class="text-[10px] text-zinc-600 dark:text-zinc-400 leading-relaxed">{{ interviewPrepData()?.perguntasProvaveis?.[activeQuestionIndex()]?.sugestaoResposta }}</p>
+                          </div>
+                        </div>
+
+                        <!-- User input Answer text area -->
+                        <div class="space-y-2">
+                          <label for="interview-answer" class="block text-[9px] font-extrabold uppercase tracking-widest text-zinc-400">Sua Resposta por Texto:</label>
+                          <textarea id="interview-answer" [formControl]="userAnswerCtrl" rows="2" placeholder="Digite exatamente o que responderia nesta etapa da entrevista profissional..."
+                                    class="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-zinc-50 dark:bg-zinc-950/70 text-zinc-800 dark:text-zinc-200 focus:border-indigo-500 transition-all"></textarea>
+                          
+                          <div class="flex justify-end pt-1">
+                            <button (click)="submitAnswer()" [disabled]="!userAnswerCtrl.value?.trim() || isEvaluating()" type="button" class="px-5 py-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold rounded-xl text-xs hover:scale-102 flex items-center gap-1.5 disabled:opacity-30 border-none cursor-pointer">
+                              @if (isEvaluating()) {
+                                <mat-icon class="animate-spin text-white dark:text-zinc-900">autorenew</mat-icon>
+                                <span>Avaliando...</span>
+                              } @else {
+                                <span>Enviar Resposta p/ IA</span>
+                                <mat-icon>send</mat-icon>
+                              }
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Evaluations feedback widget -->
+                        @if (answerFeedback()) {
+                          <div class="mt-4 p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/15 border border-indigo-150/10 dark:border-indigo-900/10 space-y-3 animate-in hover:shadow-xs transition-all text-xs">
+                            <div class="flex gap-2 justify-between items-center bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-200/50 dark:border-zinc-800">
+                              <span class="font-extrabold uppercase tracking-widest text-zinc-500 text-[10px]">Avaliação Geral</span>
+                              <div class="flex items-center gap-1 font-black text-xs text-indigo-750 dark:text-indigo-400 bg-indigo-100/70 dark:bg-indigo-950 px-2.5 py-1 rounded-full">
+                                <mat-icon class="text-[14px] w-[14px] h-[14px] block text-indigo-600">stars</mat-icon>
+                                <span>Nota: {{ answerFeedback()?.nota }}/10</span>
+                              </div>
+                            </div>
+                            <div>
+                              <strong class="font-black text-zinc-800 dark:text-zinc-200 block mb-0.5 uppercase tracking-wide text-[9px] text-indigo-650 dark:text-indigo-400">Conselho do Recrutador IA:</strong>
+                              <p class="text-zinc-650 dark:text-zinc-350 leading-relaxed font-semibold">{{ answerFeedback()?.feedback }}</p>
+                            </div>
+                            <div class="p-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10 text-[11px]">
+                              <strong class="font-black text-emerald-800 dark:text-emerald-400 block mb-0.5 uppercase tracking_wide text-[9px]">Onde você pode evoluir:</strong>
+                              <p class="text-zinc-650 dark:text-zinc-350 leading-relaxed font-semibold">{{ answerFeedback()?.melhorias }}</p>
+                            </div>
+                          </div>
+                        }
+
+                      } @else {
+                        <div class="flex-1 flex flex-col items-center justify-center text-center p-6 text-zinc-400">
+                          <mat-icon class="text-3xl mb-1 text-zinc-300 dark:text-zinc-700">chat_bubble_outline</mat-icon>
+                          <p class="text-xs font-bold uppercase tracking-widest">Selecione uma pergunta acima para iniciar o simulado inteligente.</p>
+                        </div>
+                      }
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/60 p-4 border border-zinc-200/50 dark:border-zinc-850 rounded-2xl flex-wrap gap-4">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></span>
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">Avaliações completadas fornecem +180 XP e treinam postura.</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- STAGE C10: CO-PILOT ENTERPRISE DASHBOARD HUB COCKPIT -->
+            @else if (viewState() === 'dashboard') {
+              <div class="flex-1 flex flex-col justify-between animate-in fade-in duration-300 text-left">
+                
+                <!-- Welcome hero band layout -->
+                <div class="bg-linear-to-r from-indigo-600/90 to-violet-700/90 p-6 rounded-3xl text-white mb-6 flex justify-between items-center gap-4 flex-wrap relative overflow-hidden shadow-md">
+                  <div class="space-y-1 relative z-10">
+                    <span class="text-[9px] font-black uppercase tracking-widest text-indigo-200 bg-white/10 px-2.5 py-0.5 rounded-full">Painel Copiloto IA</span>
+                    <h2 class="text-xl font-extrabold tracking-tight">Excelente foco, {{ profileForm.value.nome || 'Profissional' }}! 👋</h2>
+                    <p class="text-xs text-indigo-100 max-w-md font-medium leading-relaxed">Você está fazendo grandes passos. Seu perfil ATS está ativado e pronto para buscas de alta eficiência.</p>
+                  </div>
+
+                  <div class="relative z-10 shrink-0">
+                    <button (click)="viewResume()" type="button" class="px-5 py-2.5 bg-white text-indigo-600 dark:bg-zinc-950 dark:text-indigo-400 font-black rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer shadow-sm">
+                      <span>Acessar Meu Currículo</span>
+                      <mat-icon>article</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Stats widgets bento grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+                  
+                  <!-- Applications -->
+                  <div class="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 p-5 rounded-3xl flex items-center justify-between shadow-xs">
+                    <div>
+                      <span class="block text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-550 mb-0.5">Candidaturas Ativas</span>
+                      <h4 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">{{ stats().applications }} Aplicadas</h4>
+                      <span class="text-[10px] text-emerald-500 font-bold tracking-wide block mt-1">+12% esta semana</span>
+                    </div>
+                    <div class="w-10 h-10 bg-indigo-50 dark:bg-zinc-805 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shrink-0">
+                      <mat-icon>bolt</mat-icon>
+                    </div>
+                  </div>
+
+                  <!-- Saved checks -->
+                  <div class="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 p-5 rounded-3xl flex items-center justify-between shadow-xs">
+                    <div>
+                      <span class="block text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-550 mb-0.5">Vagas Interessadas</span>
+                      <h4 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">{{ stats().savedJobs }} Registradas</h4>
+                      <span class="text-[10px] text-zinc-500 font-bold tracking-wide block mt-1">Match de IA ativo</span>
+                    </div>
+                    <div class="w-10 h-10 bg-indigo-50 dark:bg-zinc-805 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shrink-0">
+                      <mat-icon>bookmark</mat-icon>
+                    </div>
+                  </div>
+
+                  <!-- Simulated evaluations -->
+                  <div class="bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 p-5 rounded-3xl flex items-center justify-between shadow-xs">
+                    <div>
+                      <span class="block text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-550 mb-0.5">Simulações de Treino</span>
+                      <h4 class="text-xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">{{ stats().simulationsCompleted }} Completados</h4>
+                      <span class="text-[10px] text-indigo-550 dark:text-indigo-400 font-bold tracking-wide block mt-1">Pontuação Média: 8.5/10</span>
+                    </div>
+                    <div class="w-10 h-10 bg-indigo-50 dark:bg-zinc-805 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shrink-0">
+                      <mat-icon>smart_toy</mat-icon>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Next Best Action and LinkedIn Optimizations row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                  
+                  <!-- Recommended IA Step Guidance widget cards -->
+                  <div class="bg-indigo-500/5 border border-indigo-550/20 p-5 rounded-3xl flex flex-col justify-between items-start text-left">
+                    <div class="space-y-1.5">
+                      <span class="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest leading-none">
+                        <mat-icon class="text-[12px] w-[12px] h-[12px] leading-[12px]">tips_and_updates</mat-icon>
+                        Recomendado por IA
+                      </span>
+                      <h4 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-150 leading-tight">Mapeie suas chances em tempo real!</h4>
+                      <p class="text-[11.5px] text-zinc-650 dark:text-zinc-450 leading-relaxed">Prepare respostas estruturadas para entrevistas ou audite os pontos críticos exigidos pelo Gupy para maximizar suas contratações.</p>
+                    </div>
+
+                    <div class="pt-4 flex gap-2">
+                      <button (click)="analyzeProfile()" type="button" class="px-3.5 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 cursor-pointer">Diagnóstico</button>
+                      <button (click)="searchJobs()" type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-600/10 cursor-pointer border-none shrink-0 border-transparent">Próxima Vaga &rarr;</button>
+                    </div>
+                  </div>
+
+                  <!-- LinkedIn profile optimisations cards -->
+                  <div class="bg-zinc-100/50 dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-805 rounded-3xl p-5 flex flex-col justify-between items-start">
+                    <div class="space-y-2 mb-4 w-full">
+                      <div class="flex justify-between items-center gap-2 flex-wrap">
+                        <span class="inline-flex bg-linear-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-widest leading-none">Otimizador LinkedIn IA</span>
+                        @if (userPlan() === 'free') {
+                          <span class="text-[9px] font-bold text-amber-600 uppercase tracking-widest">Apenas Premium Ouro ★</span>
+                        }
+                      </div>
+
+                      <h4 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-150 leading-tight">Posicione seu perfil para Headhunters!</h4>
+                      <p class="text-[11.5px] text-zinc-650 dark:text-zinc-450 leading-relaxed">Ajustamos seu título e biografia do LinkedIn para ficarem ultra magnetizados para recrutadores ativos nas buscas.</p>
+                    </div>
+
+                    <button (click)="optimizeLinkedIn()" [disabled]="isLinkedInSubmitting()" type="button" class="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 text-xs font-extrabold rounded-xl transition-all flex items-center gap-1.5 border-none cursor-pointer shrink-0">
+                      @if (isLinkedInSubmitting()) {
+                        <mat-icon class="animate-spin">autorenew</mat-icon>
+                        <span>Gerando manchete...</span>
+                      } @else {
+                        <span>Gerar Manchete LinkedIn</span>
+                        <mat-icon>rocket_launch</mat-icon>
+                      }
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- Generated LinkedIn output container -->
+                @if (linkedInProfile()) {
+                  <div class="bg-indigo-50/50 dark:bg-indigo-950/15 border border-indigo-150/10 dark:border-indigo-900/15 p-5 rounded-2xl animate-fade-in duration-300 text-xs text-left space-y-4 mb-6">
+                    <div class="flex justify-between items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 bg-indigo-650 rounded-lg text-white flex items-center justify-center">
+                          <mat-icon class="text-[16px] w-[16px] h-[16px] leading-[16px] text-white">campaign</mat-icon>
+                        </div>
+                        <div>
+                          <strong class="font-extrabold text-zinc-900 dark:text-zinc-150 text-xs block leading-none">Título Recomendado por Recrutadores</strong>
+                          <span class="text-[9px] text-zinc-400 mt-0.5 block font-bold">SEO Otimizado</span>
+                        </div>
+                      </div>
+                      <span class="bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 font-extrabold px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider">+150 XP Acumulados</span>
+                    </div>
+
+                    <p class="font-black text-indigo-750 dark:text-indigo-400 italic bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 p-3 rounded-xl">"{{ linkedInProfile()?.headline }}"</p>
+                    
+                    <div class="p-3 bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800 rounded-xl space-y-1.5">
+                      <span class="block text-[8px] font-extrabold text-indigo-650 dark:text-indigo-400 uppercase tracking-widest">Resumo Otimizado (Seção "Sobre")</span>
+                      <p class="text-zinc-650 dark:text-zinc-350 leading-relaxed whitespace-pre-wrap">{{ linkedInProfile()?.aboutMe }}</p>
+                    </div>
+
+                    <div class="p-3.5 bg-yellow-500/5 border border-yellow-500/10 rounded-xl space-y-1">
+                      <span class="block text-[8px] font-extrabold text-yellow-750 dark:text-yellow-450 uppercase tracking-widest flex items-center gap-1 leading-none">
+                        <mat-icon class="text-[12px] w-[12px] h-[12px] leading-[12px] text-yellow-600">tips_and_updates</mat-icon> Secionamento recomendação de Headhunter:
+                      </span>
+                      <p class="text-zinc-650 dark:text-zinc-355 leading-relaxed">{{ linkedInProfile()?.advice }}</p>
+                    </div>
+                  </div>
+                }
+
+                <!-- Quick shortcuts deck -->
+                <div class="bg-zinc-100/50 dark:bg-zinc-900/40 border border-zinc-200/60 dark:border-zinc-850 p-4 rounded-2xl flex justify-between items-center gap-4 flex-wrap">
+                  <span class="text-xs text-zinc-500 dark:text-zinc-400 font-bold">&bull; Recomendamos realizar simulações diárias para manter o Streak ativo no painel.</span>
+                  
+                  <div class="flex gap-2.5">
+                    <button (click)="viewResume()" type="button" class="px-4 py-2 hover:bg-zinc-150 hover:dark:bg-zinc-850 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all border border-zinc-200 dark:border-zinc-800 cursor-pointer bg-white dark:bg-zinc-900 flex items-center gap-1">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">article</mat-icon> Currículo
+                    </button>
+                    <button (click)="analyzeProfile()" type="button" class="px-4 py-2 hover:bg-zinc-150 hover:dark:bg-zinc-850 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all border border-zinc-200 dark:border-zinc-800 cursor-pointer bg-white dark:bg-zinc-900 flex items-center gap-1">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">insights</mat-icon> IA Diagnóstico
+                    </button>
+                    <button (click)="searchJobs()" type="button" class="px-5 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer">
+                      <span>Buscar Vagas</span>
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            }
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- PREMIUM ASSINATURA / ACTIVITY REFERRAL ACTIVE MODAL -->
+  @if (showUpgradeModal()) {
+    <div class="fixed inset-0 bg-zinc-950/70 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-300">
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in duration-300">
+        
+        <!-- Dismiss card button -->
+        <button (click)="closeUpgradeModal()" type="button" class="absolute top-4 right-4 p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer border-none bg-transparent">
+          <mat-icon>close</mat-icon>
+        </button>
+
+        <!-- Dynamic Level badge gold premium -->
+        <div class="flex justify-center mb-3">
+          <span class="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 px-3 pl-2 py-1 rounded-full text-[10px] font-black tracking-wider uppercase">
+            <mat-icon class="text-amber-500 text-[14px] w-[14px] h-[14px] leading-[14px]">star</mat-icon> Premium Ouro ★
+          </span>
+        </div>
+
+        <div class="text-center mb-5">
+          <h3 class="text-xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight">
+            @if (upgradeIntent()) {
+              Acesso Premium necessário para {{ upgradeIntent() }}!
+            } @else {
+              Desbloqueie todo o seu potencial!
+            }
+          </h3>
+          <p class="text-zinc-500 dark:text-zinc-400 text-xs mt-1.5 max-w-sm mx-auto">
+            Habilite o Copiloto de Recrutamento Completo e garanta recolocações até 3x mais rápidas.
+          </p>
+        </div>
+
+        <!-- Advantages Checklist included -->
+        <div class="space-y-3 mb-6 bg-zinc-50 dark:bg-zinc-850 p-4.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-805 text-xs">
+          <span class="block text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1.5">Vantagens Inclusas:</span>
+          
+          <div class="flex items-start gap-2">
+            <mat-icon class="text-emerald-500 shrink-0 text-[16px] w-[16px] h-[16px]">check_circle</mat-icon>
+            <div>
+              <strong class="text-zinc-800 dark:text-zinc-200 font-bold">Resumos de Currículo Ilimitados IA</strong>
+              <p class="text-zinc-500 dark:text-zinc-450">Gere e salve infinitas estruturas ATS com palavras-chave recomendadas.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2">
+            <mat-icon class="text-emerald-500 shrink-0 text-[16px] w-[16px] h-[16px]">check_circle</mat-icon>
+            <div>
+              <strong class="text-zinc-800 dark:text-zinc-200 font-bold">Candidatura Automática Expressa ★</strong>
+              <p class="text-zinc-500 dark:text-zinc-450">Nosso assistente aplica para você na Gupy e InfoJobs com prioridade.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2">
+            <mat-icon class="text-emerald-500 shrink-0 text-[16px] w-[16px] h-[16px]">check_circle</mat-icon>
+            <div>
+              <strong class="text-zinc-800 dark:text-zinc-200 font-bold">Otimizador LinkedIn SEO Inteligente</strong>
+              <p class="text-zinc-500 dark:text-zinc-450">Sua biografia profissional estruturada por especialistas.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2">
+            <mat-icon class="text-emerald-500 shrink-0 text-[16px] w-[16px] h-[16px]">check_circle</mat-icon>
+            <div>
+              <strong class="text-zinc-800 dark:text-zinc-200 font-bold">Simulado Ilimitado & Feedback de Nota</strong>
+              <p class="text-zinc-500 dark:text-zinc-450">Perguntas comportamentais preparadas especificamente para cada vaga.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature pricing and free referral gamification layout -->
+        <div class="space-y-3">
+          
+          <!-- Route 1: Assinar SaaS low cost plan -->
+          <button (click)="upgradeToPremium()" type="button" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-black rounded-xl hover:from-amber-600 hover:to-yellow-600 transition-all text-xs shadow-md shadow-amber-500/15 cursor-pointer flex items-center justify-center gap-1.5 border-none">
+            <span>Ativar Premium Ouro</span>
+            <span>•</span>
+            <span class="font-bold opacity-90">Apenas R$ 19,90/mês</span>
+            <mat-icon class="text-[14px] w-[14px] h-[14px]">arrow_forward</mat-icon>
+          </button>
+
+          <!-- Route 2: Activity/Task referral free unlock -->
+          <div class="border border-zinc-200 dark:border-zinc-805 rounded-xl p-3 flex justify-between items-center gap-3 text-left">
+            <div>
+              <strong class="text-zinc-800 dark:text-zinc-200 text-xs font-bold block leading-none mb-1">Passaporte por Atividade (Grátis)</strong>
+              <span class="text-[10px] text-zinc-500 dark:text-zinc-400 block leading-tight">Troque 500 XP por 24h de Acesso Pro!</span>
+            </div>
+            
+            <button (click)="redeemXpForPremium()" [disabled]="xpCount() < 500" type="button" class="px-3 py-1.5 bg-zinc-900 border-none hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-extrabold rounded-lg shrink-0 transition-colors cursor-pointer">
+              Trocar ({{ xpCount() }}/500 XP)
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Sequence days active -->
+        <div class="text-center mt-4">
+          <span class="inline-flex items-center gap-1 text-[10px] bg-zinc-100 dark:bg-zinc-850 px-2.5 py-1 rounded-full font-bold text-zinc-500 dark:text-zinc-400">
+            <mat-icon class="text-[13px] w-[13px] h-[13px] text-orange-500">local_fire_department</mat-icon>
+            Você está mantendo um foco de {{ streakCount() }} dias seguidos. Continue com tudo!
+          </span>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

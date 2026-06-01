@@ -1,0 +1,8 @@
+{
+  "name": "EmpregaJá",
+  "description": "Plataforma completa para ajudar pessoas desempregadas na criação de currículos, busca de vagas, recomendação de cursos e preparação para entrevistas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
