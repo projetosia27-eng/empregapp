@@ -11,15 +11,14 @@ export async function generateContentWithRetry(
     initialModel = params.model;
   }
   
-  const modelsToTry = [initialModel, 'gemini-2.5-flash'].filter(Boolean) as string[];
+  const modelsToTry = [initialModel, 'gemini-3.1-flash-lite', 'gemini-2.5-flash'].filter(Boolean) as string[];
   const uniqueModels = Array.from(new Set(modelsToTry));
 
   let lastError: any;
 
   for (const model of uniqueModels) {
-    // If the primary model is gemini-3.5-flash and it experiences high demand/503/429,
-    // we want to fall back to the ultra-stable 'gemini-2.5-flash' immediately (1 retry max)
-    // to keep the app functional and fast.
+    // If the model is gemini-3.5-flash and we have fallback models,
+    // we want to fall back quickly (1 retry max) to keep the app highly responsive.
     const effectiveMaxRetries = (model === 'gemini-3.5-flash' && uniqueModels.length > 1) ? 1 : maxRetries;
 
     for (let attempt = 1; attempt <= effectiveMaxRetries; attempt++) {
