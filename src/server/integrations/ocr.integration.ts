@@ -1,9 +1,10 @@
-import { PDFParse } from 'pdf-parse';
-import { createWorker } from 'tesseract.js';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as pdfParse from 'pdf-parse';
 
 /**
- * Integração com OCR Gratuito (ex: Tesseract OCR e pdf-parse)
- * Responsável por extrair texto de imagens ou PDFs com texto não selecionável.
+ * Integração com extração de texto de PDF (com fallback multimodal inteligente)
+ * Responsável por extrair o texto de arquivos PDF. Se o PDF for baseado em imagens (escaner),
+ * a extração retorna texto mínimo e delega ao poder multimodal nativo do Gemini (Visão/PDF).
  */
 export class OcrIntegration {
   static async extractTextFromPdfBase64(base64: string): Promise<string> {
@@ -11,69 +12,25 @@ export class OcrIntegration {
       if (!base64) return '';
       
       const buffer = Buffer.from(base64, 'base64');
-      const uint8 = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-      const parser = new PDFParse({ data: uint8 });
       
-      // 1. Tentar extração rápida de texto selecionável
-      let parsedData;
-      try {
-        parsedData = await parser.getText();
-        if (parsedData && parsedData.text) {
-          const cleanText = parsedData.text.trim();
-          if (cleanText.length > 150) {
-            console.log(`[OcrIntegration] pdf-parse extraiu com sucesso ${cleanText.length} caracteres de texto selecionável.`);
-            try { await parser.destroy(); } catch { console.info('[OcrIntegration] Erro ao destruir parser.'); }
-            return cleanText;
-          }
+      // Resolve compatibilidade de importação padrão/ESM de pdf-parse
+      const parsePdf = typeof pdfParse === 'function' ? pdfParse : (pdfParse as any).default || pdfParse;
+      
+      if (typeof parsePdf !== 'function') {
+        console.warn('[OcrIntegration] pdf-parse não pôde ser resolvido como função.');
+        return '';
+      }
+      
+      const parsedData = await parsePdf(buffer);
+      if (parsedData && parsedData.text) {
+        const cleanText = parsedData.text.trim();
+        if (cleanText.length > 50) {
+          console.log(`[OcrIntegration] pdf-parse extraiu com sucesso ${cleanText.length} caracteres do PDF.`);
+          return cleanText;
         }
-      } catch (e) {
-        console.warn('[OcrIntegration] Falha na extração de texto direto do PDF, continuando para modo OCR:', e);
-      }
-      
-      // 2. Tesseract OCR (Para PDFs escaneados ou PDFs de imagens)
-      console.log('[OcrIntegration] PDF sem texto selecionável relevante. Iniciando processamento com Tesseract OCR...');
-      
-      let ocrText = '';
-      try {
-        // Obter capturas das páginas para aplicar o OCR
-        const screenshotResult = await parser.getScreenshot({
-          imageBuffer: true,
-          imageDataUrl: false,
-          first: 3 // Processar até as 3 primeiras páginas para excelente relação velocidade/precisão
-        });
-        
-        if (screenshotResult && screenshotResult.pages && screenshotResult.pages.length > 0) {
-          console.log(`[OcrIntegration] Renderizado ${screenshotResult.pages.length} páginas para OCR.`);
-          
-          const worker = await createWorker('por');
-          
-          for (const page of screenshotResult.pages) {
-            console.log(`[OcrIntegration] Executando OCR Tesseract na página ${page.pageNumber}...`);
-            const pageBuffer = Buffer.from(page.data);
-            const result = await worker.recognize(pageBuffer);
-            if (result && result.data && result.data.text) {
-              ocrText += `\n[Página ${page.pageNumber}]\n` + result.data.text;
-            }
-          }
-          
-          await worker.terminate();
-        }
-      } catch (ocrErr) {
-        console.error('[OcrIntegration] Falha durante o processamento de Tesseract OCR:', ocrErr);
-      }
-      
-      try {
-        await parser.destroy();
-      } catch {
-        console.info('[OcrIntegration] Erro ao fechar parser.');
-      }
-      
-      if (ocrText && ocrText.trim().length > 50) {
-        console.log(`[OcrIntegration] Tesseract OCR extraiu com sucesso ${ocrText.trim().length} caracteres do PDF.`);
-        return ocrText.trim();
       }
     } catch (e) {
-      console.warn('[OcrIntegration] pdf-parse + Tesseract falharam ao ler PDF, aplicando heurística de fallback:', e);
+      console.warn('[OcrIntegration] pdf-parse falhou ao ler PDF, aplicando heurística de fallback:', e);
     }
 
     try {
@@ -105,10 +62,10 @@ export class OcrIntegration {
         }
       }
     } catch (e) {
-      console.warn('[OcrIntegration] Método alternativo de extração falhou, usando simulação:', e);
+      console.warn('[OcrIntegration] Método alternativo de extração falhou:', e);
     }
 
-    console.log('[Integration] Extraindo texto via OCR (Simulação leve)...');
-    return "Texto extraído simulado via OCR";
+    console.log('[OcrIntegration] Não foi possível extrair texto diretamente. Delegando processamento ao motor multimodal nativo do Gemini.');
+    return '';
   }
 }
