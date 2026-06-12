@@ -346,8 +346,33 @@
                     </button>
                     <div class="text-left">
                       <h2 class="text-xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-150 leading-none mb-1">Upload do Currículo PDF</h2>
-                      <p class="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">Nossa IA preenche seu perfil em 5 segundos lendo seu currículo atual.</p>
+                      <p class="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">Mapeamos seu currículo para preencher sua ficha profissional instantaneamente.</p>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Parser Method Selector -->
+                <div class="mb-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-150/50 dark:border-zinc-850 rounded-2xl p-4 text-left">
+                  <h3 class="text-xs font-black text-zinc-900 dark:text-zinc-100 mb-2.5 uppercase tracking-wider">Método de Preenchimento</h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button type="button" (click)="parserMethod.set('free')" 
+                      [class]="parserMethod() === 'free' ? 'border-2 border-indigo-600 bg-indigo-500/5 dark:bg-indigo-950/25 text-indigo-700 dark:text-indigo-400 font-extrabold' : 'border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-850/40'"
+                      class="p-3.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer box-border">
+                      <mat-icon class="text-lg mt-0.5 shrink-0" [class.text-indigo-600]="parserMethod() === 'free'">bolt</mat-icon>
+                      <div>
+                        <div class="text-xs font-bold leading-none mb-1">Extrator Grátis (Sem IA)</div>
+                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">Heurística local ultrarrápida, 100% gratuita para sempre e sem custos de rede.</p>
+                      </div>
+                    </button>
+                    <button type="button" (click)="parserMethod.set('ai')" 
+                      [class]="parserMethod() === 'ai' ? 'border-2 border-indigo-600 bg-indigo-500/5 dark:bg-indigo-950/25 text-indigo-700 dark:text-indigo-400 font-extrabold' : 'border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-850/40'"
+                      class="p-3.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer box-border">
+                      <mat-icon class="text-lg mt-0.5 shrink-0" [class.text-indigo-600]="parserMethod() === 'ai'">psychology</mat-icon>
+                      <div>
+                        <div class="text-xs font-bold leading-none mb-1">Preenchimento IA (Gemini)</div>
+                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">Varredura inteligente e conceitual com o poder do AI Studio (Requer servidor ativo).</p>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -372,7 +397,7 @@
                   @if (isAnalyzing()) {
                     <mat-icon class="animate-spin text-indigo-600 dark:text-indigo-400 text-4xl h-10 w-10 block mb-3">autorenew</mat-icon>
                     <h3 class="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 mb-1">Mapeando competências...</h3>
-                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Varrendo estruturas profissionais para formulários</p>
+                    <p class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold transition-all">{{ analysisStatus() }}</p>
                   } @else {
                     <div class="w-12 h-12 bg-indigo-50 dark:bg-zinc-805/40 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-3">
                       <mat-icon class="text-2xl h-6 w-6 block">cloud_upload</mat-icon>
@@ -795,6 +820,48 @@
                     <mat-icon class="text-[14px] w-[14px] h-[14px]">space_dashboard</mat-icon>
                     <span>Dashboard</span>
                   </button>
+                </div>
+
+                <!-- Free Job Multi-Search Launcher -->
+                <div class="mb-5 bg-indigo-500/[0.03] dark:bg-zinc-900/60 border border-indigo-500/10 dark:border-zinc-800 rounded-2xl p-4 text-left">
+                  <div class="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <mat-icon class="text-lg">search</mat-icon>
+                      </div>
+                      <div>
+                        <h3 class="text-xs font-black text-zinc-900 dark:text-zinc-100 leading-tight uppercase tracking-wider">Buscador Manuel Grátis (Oficial)</h3>
+                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Gere pesquisas reais com filtros inteligentes direto nos portais de vaga</p>
+                      </div>
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/10">100% Gratuito</span>
+                  </div>
+
+                  <div class="flex flex-col sm:flex-row gap-2 mt-3">
+                    <div class="flex-1 relative">
+                      <mat-icon class="absolute left-3 top-2.5 text-zinc-405 text-sm">work_outline</mat-icon>
+                      <input type="text" [value]="customSearchCargo()" (input)="onSearchCargoInput($event)" placeholder="Cargo ou Palavra-chave (ex: Analista de Negócios)" class="w-full pl-9 pr-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-white dark:bg-zinc-900 focus:border-indigo-500 text-zinc-800 dark:text-zinc-200">
+                    </div>
+                    <div class="sm:w-52 relative">
+                      <mat-icon class="absolute left-3 top-2.5 text-zinc-405 text-sm">place</mat-icon>
+                      <input type="text" [value]="customSearchLocal()" (input)="onSearchLocalInput($event)" placeholder="Cidade ou Estado" class="w-full pl-9 pr-3 py-2 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs outline-none bg-white dark:bg-zinc-900 focus:border-indigo-500 text-zinc-800 dark:text-zinc-200">
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2.5">
+                    <button (click)="openFreeSearch('linkedin')" type="button" class="px-3 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-[11px] font-extrabold transition-colors flex items-center justify-center gap-1.5 border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">chevron_right</mat-icon>
+                      <span>Pesquisar no LinkedIn</span>
+                    </button>
+                    <button (click)="openFreeSearch('catho')" type="button" class="px-3 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-[11px] font-extrabold transition-colors flex items-center justify-center gap-1.5 border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">chevron_right</mat-icon>
+                      <span>Pesquisar na Catho</span>
+                    </button>
+                    <button (click)="openFreeSearch('infojobs')" type="button" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-[11px] font-extrabold transition-colors flex items-center justify-center gap-1.5 border-none cursor-pointer">
+                      <mat-icon class="text-[14px] w-[14px] h-[14px]">chevron_right</mat-icon>
+                      <span>Pesquisar no InfoJobs</span>
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Job list scroll wrap -->

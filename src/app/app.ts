@@ -201,6 +201,20 @@ export class App implements OnInit {
   tutorialStep = signal(0);
 
   theme = signal<'light' | 'dark'>('light');
+  parserMethod = signal<'free' | 'ai'>('free');
+  analysisStatus = signal<string>('Verificando arquivo...');
+  customSearchCargo = signal('');
+  customSearchLocal = signal('');
+
+  onSearchCargoInput(event: Event) {
+    const val = (event.target as HTMLInputElement).value;
+    this.customSearchCargo.set(val);
+  }
+
+  onSearchLocalInput(event: Event) {
+    const val = (event.target as HTMLInputElement).value;
+    this.customSearchLocal.set(val);
+  }
 
   ngOnInit() {
     if (typeof window !== 'undefined') {
@@ -352,6 +366,154 @@ export class App implements OnInit {
     }
   }
 
+  loadScript(src: string): Promise<void> {
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined') {
+        resolve();
+        return;
+      }
+      const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+      if (existing) {
+        if (existing.getAttribute('data-loaded') === 'true') {
+          resolve();
+        } else {
+          const prev = existing.onload;
+          existing.onload = (e: Event) => {
+            if (prev) {
+              (prev as (this: GlobalEventHandlers, ev: Event) => unknown).call(existing, e);
+            }
+            resolve();
+          };
+        }
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.setAttribute('data-loaded', 'false');
+      script.onload = () => {
+        script.setAttribute('data-loaded', 'true');
+        resolve();
+      };
+      script.onerror = () => {
+        resolve();
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  async extractTextWithPdfJs(file: File): Promise<string> {
+    this.analysisStatus.set('Carregando leitor de PDF local...');
+    await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    
+    const win = window as unknown as Record<string, Record<string, unknown>>;
+    const pdfjsLib = (win['pdfjsLib'] || win['pdfjs-dist/build/pdf']) as unknown as {
+      GlobalWorkerOptions: { workerSrc: string };
+      getDocument: (config: { data: ArrayBuffer }) => {
+        promise: Promise<{
+          numPages: number;
+          getPage: (pageNo: number) => Promise<{
+            getTextContent: () => Promise<{ items: unknown[] }>;
+            getViewport: (config: { scale: number }) => { width: number; height: number };
+            render: (config: { canvasContext: CanvasRenderingContext2D | null; viewport: unknown }) => { promise: Promise<void> };
+          }>;
+        }>;
+      };
+    };
+
+    if (!pdfjsLib) {
+      throw new Error('PDF.js não pôde ser carregada.');
+    }
+    
+    const workerUrl = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    try {
+      // Cria um worker inline same-origin que importa o script cross-origin via importScripts,
+      // evitando erros de CORS (fetch) e bloqueio de criação de web workers cross-origin no navegador.
+      const workerCode = `importScripts("${workerUrl}");`;
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+      console.log('[ClientPDF] Worker do PDF.js configurado com sucesso via same-origin importScripts Blob URL.');
+    } catch (e) {
+      console.warn('Não foi possível carregar worker via Blob URL, utilizando URL de CDN direta como fallback:', e);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+    }
+
+    this.analysisStatus.set('Extraindo texto digital do arquivo...');
+    const arrayBuffer = await file.arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    
+    let fullText = '';
+    
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item) => {
+          const textItem = item as { str?: string };
+          return textItem.str ?? '';
+        })
+        .join(' ');
+      fullText += pageText + '\n';
+    }
+
+    const trimmed = fullText.trim();
+    // Se o PDF tiver texto digital abundante (mais de 150 caracteres), retornamos imediatamente!
+    if (trimmed.length > 150 && trimmed.replace(/\s/g, '').length > 50) {
+      console.log(`[ClientPDF] Extração digital obteve ${trimmed.length} caracteres.`);
+      this.analysisStatus.set('Leitura concluída com sucesso!');
+      return trimmed;
+    }
+
+    // Se o texto for vazio ou muito pequeno, o PDF é uma imagem (escaner). Iniciamos o OCR gratuito!
+    this.analysisStatus.set('Currículo escaneado detectado! Carregando biblioteca de OCR (Tesseract.js)...');
+    
+    await this.loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js');
+    const Tesseract = win['Tesseract'] as unknown as {
+      createWorker: (lang: string) => Promise<{
+        recognize: (image: HTMLCanvasElement) => Promise<{ data: { text: string } }>;
+        terminate: () => Promise<void>;
+      }>;
+    };
+
+    if (!Tesseract) {
+      throw new Error('Tesseract.js devia estar disponível.');
+    }
+
+    this.analysisStatus.set('Inicializando OCR gratuito para Língua Portuguesa...');
+    const worker = await Tesseract.createWorker('por');
+    
+    let ocrText = '';
+    const pagesToOcr = Math.min(pdf.numPages, 3); // Lemos até as 3 primeiras páginas para ficar rápido
+    
+    for (let i = 1; i <= pagesToOcr; i++) {
+      this.analysisStatus.set(`Executando OCR gratuito na página ${i} de ${pagesToOcr}...`);
+      const page = await pdf.getPage(i);
+      
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) continue;
+      
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise;
+      
+      const result = await worker.recognize(canvas);
+      ocrText += result.data.text + '\n';
+    }
+    
+    await worker.terminate();
+    this.analysisStatus.set('Processamento OCR finalizado com sucesso!');
+    return ocrText;
+  }
+
   async handleFile(file: File) {
     if (file.type !== 'application/pdf') {
       this.showToast('Por favor, envie apenas arquivos em formato PDF.', 'error');
@@ -359,13 +521,35 @@ export class App implements OnInit {
     }
 
     this.isAnalyzing.set(true);
+    this.analysisStatus.set('Iniciando carregamento do currículo...');
+    
     try {
+      let extractedText = '';
+      try {
+        const timeoutPromise = new Promise<string>((_, reject) => {
+          setTimeout(() => reject(new Error('Tempo limite excedido na leitura local')), 25000);
+        });
+        extractedText = await Promise.race([
+          this.extractTextWithPdfJs(file),
+          timeoutPromise
+        ]);
+        console.log('[ClientPDF] Extração local finalizada com sucesso (comprimento do texto:', extractedText.length, ')');
+      } catch (ocrError) {
+        console.warn('Falha ou Timeout no leitor de PDF local:', ocrError);
+        this.analysisStatus.set('Leitura local indisponível, processando no servidor...');
+      }
+
       const reader = new FileReader();
       reader.onload = async () => {
         const base64String = (reader.result as string).split(',')[1];
         
         try {
-          const response = await firstValueFrom(this.postWithCache<Record<string, string>>('/api/parse-resume', { pdfBase64: base64String }));
+          this.analysisStatus.set('Preenchendo sua ficha profissional...');
+          const response = await firstValueFrom(this.postWithCache<Record<string, string>>('/api/parse-resume', { 
+            pdfBase64: base64String, 
+            extractedText: extractedText || undefined,
+            parserMethod: this.parserMethod() 
+          }));
           
           if (response) {
             this.profileForm.patchValue({
@@ -382,6 +566,8 @@ export class App implements OnInit {
               cursos: response['cursos'] || '',
               tipoVaga: response['tipoVaga'] || 'remota'
             });
+            this.addXp(50);
+            this.showToast('Currículo lido e importado de forma totalmente gratuita!', 'success');
           }
         } catch (err) {
           console.error("Erro ao analisar currículo", err);
@@ -475,6 +661,13 @@ export class App implements OnInit {
     
     this.isSubmitting.set(true);
     const formData = this.profileForm.getRawValue();
+
+    if (!this.customSearchCargo()) {
+      this.customSearchCargo.set(formData.ultimoCargo || formData.areaInteresse || '');
+    }
+    if (!this.customSearchLocal()) {
+      this.customSearchLocal.set(formData.cidadeEstado || '');
+    }
     
     this.postWithCache<NonNullable<ReturnType<typeof this.jobsList>>>('/api/search-jobs', formData)
       .subscribe({
@@ -520,6 +713,26 @@ export class App implements OnInit {
           this.viewState.set('jobs');
         }
       });
+  }
+
+  openFreeSearch(platform: 'linkedin' | 'catho' | 'infojobs') {
+    const cargo = this.customSearchCargo() || this.profileForm.getRawValue().ultimoCargo || 'Vendedor';
+    const local = this.customSearchLocal() || this.profileForm.getRawValue().cidadeEstado || 'Brasil';
+    
+    let url = '';
+    if (platform === 'linkedin') {
+      url = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(cargo)}&location=${encodeURIComponent(local)}`;
+    } else if (platform === 'catho') {
+      url = `https://www.catho.com.br/vagas/?q=${encodeURIComponent(cargo)}&l=${encodeURIComponent(local)}`;
+    } else if (platform === 'infojobs') {
+      url = `https://www.infojobs.com.br/empregos.aspx?palavra=${encodeURIComponent(cargo)}&localizacao=${encodeURIComponent(local)}`;
+    }
+    
+    if (url) {
+      window.open(url, '_blank');
+      this.addXp(30);
+      this.showToast(`Abrindo canal oficial de busca no ${platform.toUpperCase()} para "${cargo}"... Boa sorte!`, 'success');
+    }
   }
 
   analyzeProfile() {
