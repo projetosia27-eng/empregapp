@@ -351,31 +351,6 @@
                   </div>
                 </div>
 
-                <!-- Parser Method Selector -->
-                <div class="mb-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-150/50 dark:border-zinc-850 rounded-2xl p-4 text-left">
-                  <h3 class="text-xs font-black text-zinc-900 dark:text-zinc-100 mb-2.5 uppercase tracking-wider">Método de Preenchimento</h3>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button type="button" (click)="parserMethod.set('free')" 
-                      [class]="parserMethod() === 'free' ? 'border-2 border-indigo-600 bg-indigo-500/5 dark:bg-indigo-950/25 text-indigo-700 dark:text-indigo-400 font-extrabold' : 'border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-850/40'"
-                      class="p-3.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer box-border">
-                      <mat-icon class="text-lg mt-0.5 shrink-0" [class.text-indigo-600]="parserMethod() === 'free'">bolt</mat-icon>
-                      <div>
-                        <div class="text-xs font-bold leading-none mb-1">Extrator Grátis (Sem IA)</div>
-                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">Heurística local ultrarrápida, 100% gratuita para sempre e sem custos de rede.</p>
-                      </div>
-                    </button>
-                    <button type="button" (click)="parserMethod.set('ai')" 
-                      [class]="parserMethod() === 'ai' ? 'border-2 border-indigo-600 bg-indigo-500/5 dark:bg-indigo-950/25 text-indigo-700 dark:text-indigo-400 font-extrabold' : 'border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-850/40'"
-                      class="p-3.5 rounded-xl text-left flex items-start gap-3 transition-all cursor-pointer box-border">
-                      <mat-icon class="text-lg mt-0.5 shrink-0" [class.text-indigo-600]="parserMethod() === 'ai'">psychology</mat-icon>
-                      <div>
-                        <div class="text-xs font-bold leading-none mb-1">Preenchimento IA (Gemini)</div>
-                        <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">Varredura inteligente e conceitual com o poder do AI Studio (Requer servidor ativo).</p>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
                 <div 
                   class="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-3xl p-8 text-center transition-colors relative min-h-[220px]"
                   [class.border-indigo-500]="isDragOver()"

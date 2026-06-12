@@ -201,7 +201,6 @@ export class App implements OnInit {
   tutorialStep = signal(0);
 
   theme = signal<'light' | 'dark'>('light');
-  parserMethod = signal<'free' | 'ai'>('free');
   analysisStatus = signal<string>('Verificando arquivo...');
   customSearchCargo = signal('');
   customSearchLocal = signal('');
@@ -547,8 +546,7 @@ export class App implements OnInit {
           this.analysisStatus.set('Preenchendo sua ficha profissional...');
           const response = await firstValueFrom(this.postWithCache<Record<string, string>>('/api/parse-resume', { 
             pdfBase64: base64String, 
-            extractedText: extractedText || undefined,
-            parserMethod: this.parserMethod() 
+            extractedText: extractedText || undefined
           }));
           
           if (response) {
