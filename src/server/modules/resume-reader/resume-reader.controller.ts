@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OcrIntegration } from '../../integrations/ocr.integration';
 import { CacheIntegration } from '../../integrations/cache.integration';
+import { GoogleGenAI, Type } from '@google/genai';
+import { generateContentWithRetry } from '../../utils/ai-retry';
 
 /**
  * Módulo 2: Leitura de Currículo com Caching e Otimização via OCR Gratuito
@@ -34,8 +36,20 @@ export class ResumeReaderController {
         textExtra = await OcrIntegration.extractTextFromPdfBase64(pdfBase64);
       }
 
-      console.log('[ResumeReaderController] Processando preenchimento em modo Gratuito Sem IA (Heurística Local)');
-      const parsed = ResumeReaderController.parseTextWithHeuristics(textExtra);
+      let parsed;
+      const apiKey = process.env['GEMINI_API_KEY'];
+      if (apiKey) {
+        try {
+          console.log('[ResumeReaderController] Processando preenchimento com IA (Gemini)...');
+          parsed = await ResumeReaderController.parseTextWithAI(textExtra, apiKey);
+        } catch (aiError) {
+          console.error('[ResumeReaderController] Erro ao processar com IA, usando Heurística como fallback:', aiError);
+          parsed = ResumeReaderController.parseTextWithHeuristics(textExtra);
+        }
+      } else {
+        console.log('[ResumeReaderController] Processando preenchimento em modo Gratuito Sem IA (Heurística Local)');
+        parsed = ResumeReaderController.parseTextWithHeuristics(textExtra);
+      }
       
       const hasData = Object.values(parsed).some(val => val && String(val).trim().length > 0);
       if (hasData && cacheKey) {
@@ -384,5 +398,85 @@ export class ResumeReaderController {
     }
 
     return result;
+  }
+
+  static async parseTextWithAI(cleanText: string, apiKey: string): Promise<any> {
+    const ai = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build'
+        }
+      }
+    });
+
+    const prompt = `Você é um leitor e extrator de informações de currículos profissional altamente inteligente e preciso.
+Analise o seguinte texto bruto extraído de um currículo e extraia os dados perfeitamente estruturados em JSON no idioma Português (Brasil).
+
+Instruções cruciais de precisão:
+- NOME COMPLETO: Deve ser estritamente o nome do candidato. NUNCA insira termos como "Contato", "Currículo de...", endereços, telefones ou e-mails no nome completo.
+- E-MAIL PROFISSIONAL: Localize o e-mail real do candidato (ex: usuario@provedor.com). Se não encontrar nenhum e-mail, deixe vazio.
+- CELULAR / WHATSAPP: Localize o número de celular/WhatsApp do candidato de forma limpa.
+- CIDADE / ESTADO: Procure pela localização física dele (cidade e sigla do estado, ex: "São Paulo - SP", "Rio de Janeiro - RJ"). Evite incluir nomes de ruas ou pontuação de contato aqui. Se não houver, tente inferir pelo telefone (DDD) ou deixe vazio.
+- ÁREA CORPORATIVA: Identifique a área de atuação principal do candidato com base no currículo (ex: "Tecnologia da Informação", "Vendas", "Recursos Humanos", "Finanças").
+- ÚLTIMO CARGO OCUPADO: O cargo mais recente da trajetória do candidato (ex: "Desenvolvedor Frontend Júnior", "Analista Financeiro", "Estagiário").
+- TEMPO DE EXPERIÊNCIA: Selecione estritamente uma das seguintes opções com base na experiência total somada: "Sem experiência", "Menos de 1 ano", "1 a 3 anos", "3 a 5 anos", "Mais de 5 anos".
+- ESCOLARIDADE: Selecione estritamente uma das seguintes opções com base no maior nível de instrução concluído: "Ensino Fundamental", "Ensino Médio Incompleto", "Ensino Médio Completo", "Ensino Superior Incompleto", "Ensino Superior Completo", "Pós-graduação / Especialização".
+- SOFT & HARD SKILLS PRINCIPAIS: Uma lista separada por vírgulas das habilidades mais importantes do currículo.
+- TRAJETÓRIA E EXPERIÊNCIA PRÉVIAS: Um resumo conciso, porém completo, das experiências anteriores de trabalho listadas (com cargos, empresas e datas).
+- CURSOS / CERTIFICADOS IMPORTANTES: Uma lista ou texto contendo os cursos extracurriculares, certificações e idiomas descritos no currículo.
+- PREFERÊNCIA DE LOCAL DE TRABALHO (TIPO DE VAGA): Selecione "remota" se o currículo expressar clara preferência por remoto/home-office, "hibrida" para híbrido, e "presencial" como padrão se não houver indicação explícita de remoto.
+
+Texto Extraído do Currículo:
+---
+${cleanText}
+---`;
+
+    const response = await generateContentWithRetry(ai, {
+      model: 'gemini-3.5-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            nome: { type: Type.STRING, description: 'Nome completo do candidato.' },
+            email: { type: Type.STRING, description: 'E-mail profissional.' },
+            telefone: { type: Type.STRING, description: 'Telefone ou celular com DDD.' },
+            cidadeEstado: { type: Type.STRING, description: 'Cidade e Estado no formato "Cidade - UF" (ex: "São Paulo - SP").' },
+            areaInteresse: { type: Type.STRING, description: 'Área corporativa ou de interesse principal do profissional.' },
+            ultimoCargo: { type: Type.STRING, description: 'Último cargo ocupado no histórico profissional.' },
+            tempoExperiencia: { 
+              type: Type.STRING, 
+              enum: ['Sem experiência', 'Menos de 1 ano', '1 a 3 anos', '3 a 5 anos', 'Mais de 5 anos'],
+              description: 'Opção de tempo de experiência total.' 
+            },
+            escolaridade: { 
+              type: Type.STRING, 
+              enum: ['Ensino Fundamental', 'Ensino Médio Incompleto', 'Ensino Médio Completo', 'Ensino Superior Incompleto', 'Ensino Superior Completo', 'Pós-graduação / Especialização'],
+              description: 'Nível de escolaridade máximo do profissional.' 
+            },
+            habilidades: { type: Type.STRING, description: 'Lista de soft e hard skills separadas por vírgulas.' },
+            experiencias: { type: Type.STRING, description: 'Sumário ou texto com as experiências e trajetória anteriores.' },
+            cursos: { type: Type.STRING, description: 'Cursos certificados e importantes listados.' },
+            tipoVaga: { 
+              type: Type.STRING, 
+              enum: ['remota', 'hibrida', 'presencial'],
+              description: 'Preferência de ambiente de trabalho.' 
+            }
+          },
+          required: [
+            'nome', 'email', 'telefone', 'cidadeEstado', 'areaInteresse', 'ultimoCargo', 
+            'tempoExperiencia', 'escolaridade', 'habilidades', 'experiencias', 'cursos', 'tipoVaga'
+          ]
+        }
+      }
+    });
+
+    const text = response.text;
+    if (text) {
+      return JSON.parse(text);
+    }
+    throw new Error('No text generated from Gemini');
   }
 }
