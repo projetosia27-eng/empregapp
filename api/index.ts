@@ -36,22 +36,27 @@ app.use((req, res, next) => {
   next();
 });
 
-// Registrar rotas de API do backend (Módulos 1 a 7)
-app.post('/api/register', UserController.registerUser);
-app.post('/api/parse-resume', ResumeReaderController.parseResume);
-app.post('/api/generate-resume', ResumeGeneratorController.generateResumeContent);
-app.post('/api/generate-resume-pdf', ResumeGeneratorController.downloadPdf);
-app.post('/api/linkedin-optimize', ResumeGeneratorController.optimizeLinkedIn);
-app.post('/api/search-jobs', JobSearchController.searchJobs);
-app.post('/api/analyze-profile', JobMatcherController.analyzeProfile);
-app.post('/api/recommend-courses', CourseRecommendationController.recommendCourses);
-app.post('/api/interview-prep', InterviewSimulatorController.interviewPrep);
-app.post('/api/interview-feedback', InterviewSimulatorController.interviewFeedback);
+// Registrar rotas de API do backend via Router para compatibilidade total no Vercel (tanto com prefixo /api quanto sem)
+const apiRouter = express.Router();
+
+apiRouter.post('/register', UserController.registerUser);
+apiRouter.post('/parse-resume', ResumeReaderController.parseResume);
+apiRouter.post('/generate-resume', ResumeGeneratorController.generateResumeContent);
+apiRouter.post('/generate-resume-pdf', ResumeGeneratorController.downloadPdf);
+apiRouter.post('/linkedin-optimize', ResumeGeneratorController.optimizeLinkedIn);
+apiRouter.post('/search-jobs', JobSearchController.searchJobs);
+apiRouter.post('/analyze-profile', JobMatcherController.analyzeProfile);
+apiRouter.post('/recommend-courses', CourseRecommendationController.recommendCourses);
+apiRouter.post('/interview-prep', InterviewSimulatorController.interviewPrep);
+apiRouter.post('/interview-feedback', InterviewSimulatorController.interviewFeedback);
 
 // Rota de ping para monitoramento de saúde do backend
-app.get('/api/health', (req, res) => {
+apiRouter.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Tratamento de rotas inexistentes
 app.use((req, res) => {

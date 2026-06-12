@@ -9,7 +9,20 @@ import * as path from 'path';
  */
 export class CacheIntegration {
   private static cacheMap = new Map<string, any>();
-  private static cacheFilePath = path.join(process.cwd(), 'ai_cache_store.json');
+  private static getCachePath(): string {
+    try {
+      // No Vercel e outras plataformas serverless, o diretório de execução é somente-leitura.
+      // O diretório /tmp é o único garantido como gravável.
+      if (fs.existsSync('/tmp')) {
+        return path.join('/tmp', 'ai_cache_store.json');
+      }
+    } catch {
+      // Silencioso fallback
+    }
+    return path.join(process.cwd(), 'ai_cache_store.json');
+  }
+
+  private static cacheFilePath = CacheIntegration.getCachePath();
 
   static {
     this.loadCacheFromFile();
