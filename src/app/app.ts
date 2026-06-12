@@ -545,7 +545,7 @@ export class App implements OnInit {
         try {
           this.analysisStatus.set('Preenchendo sua ficha profissional...');
           const response = await firstValueFrom(this.postWithCache<Record<string, string>>('/api/parse-resume', { 
-            pdfBase64: base64String, 
+            pdfBase64: (extractedText && extractedText.trim().length > 150) ? '' : base64String, 
             extractedText: extractedText || undefined
           }));
           

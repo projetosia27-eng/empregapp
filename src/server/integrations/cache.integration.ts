@@ -9,10 +9,13 @@ import * as path from 'path';
  */
 export class CacheIntegration {
   private static cacheMap = new Map<string, any>();
-  private static getCachePath(): string {
+  private static getCachePath(): string | null {
+    // No Vercel e ambientes serverless, o sistema de arquivos é virtual ou de leitura apenas.
+    // Evitamos totalmente E/S de arquivos para evitar exceções de permissão ou lentidão.
+    if (process.env['VERCEL'] || process.env['NOW_REGION']) {
+      return null;
+    }
     try {
-      // No Vercel e outras plataformas serverless, o diretório de execução é somente-leitura.
-      // O diretório /tmp é o único garantido como gravável.
       if (fs.existsSync('/tmp')) {
         return path.join('/tmp', 'ai_cache_store.json');
       }
@@ -30,7 +33,7 @@ export class CacheIntegration {
 
   private static loadCacheFromFile() {
     try {
-      if (fs.existsSync(this.cacheFilePath)) {
+      if (this.cacheFilePath && fs.existsSync(this.cacheFilePath)) {
         const fileContent = fs.readFileSync(this.cacheFilePath, 'utf-8');
         const parsed = JSON.parse(fileContent);
         for (const [key, val] of Object.entries(parsed)) {
@@ -45,6 +48,9 @@ export class CacheIntegration {
 
   private static saveCacheToFile() {
     try {
+      if (!this.cacheFilePath) {
+        return; // Rodando no Vercel/Serverless, manter apenas na RAM
+      }
       const obj: Record<string, any> = {};
       for (const [key, val] of this.cacheMap.entries()) {
         obj[key] = val;

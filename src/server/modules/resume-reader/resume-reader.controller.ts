@@ -15,8 +15,9 @@ export class ResumeReaderController {
       }
 
       // 1. Usar resposta salva (Cache) para evitar qualquer reprocessamento/custo
-      if (pdfBase64) {
-        const cached = CacheIntegration.get<any>('resume-reader', pdfBase64);
+      const cacheKey = (extractedText && extractedText.trim().length > 150) ? extractedText.trim() : pdfBase64;
+      if (cacheKey) {
+        const cached = CacheIntegration.get<any>('resume-reader', cacheKey);
         if (cached) {
           res.json(cached);
           return;
@@ -37,8 +38,8 @@ export class ResumeReaderController {
       const parsed = ResumeReaderController.parseTextWithHeuristics(textExtra);
       
       const hasData = Object.values(parsed).some(val => val && String(val).trim().length > 0);
-      if (hasData && pdfBase64) {
-        CacheIntegration.set('resume-reader', pdfBase64, parsed);
+      if (hasData && cacheKey) {
+        CacheIntegration.set('resume-reader', cacheKey, parsed);
       }
       
       res.json(parsed);
