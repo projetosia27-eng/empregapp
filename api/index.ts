@@ -23,14 +23,14 @@ app.use((req, res, next) => {
 });
 
 // Middleware crucial para corrigir caminhos reescritos pela plataforma Vercel.
-// Restaura o path original de headers como x-matched-path para garantir que o Express coincida com a rota correta.
+// No Vercel, o 'x-original-url' contém a rota real requisitada (ex: "/api/parse-resume").
+// Já o 'x-matched-path' contém o arquivo físico do servidor que interceptou (ex: "/api/index.ts" ou "/api/index").
+// Se reescrevermos para 'x-matched-path', o roteamento do Express quebra, redirecionando tudo para 404.
 app.use((req, res, next) => {
-  const matchedPath = req.headers['x-matched-path'];
-  const originalUrl = req.headers['x-original-url'];
-  
-  if (typeof matchedPath === 'string' && matchedPath.startsWith('/api')) {
-    req.url = matchedPath;
-  } else if (typeof originalUrl === 'string' && originalUrl.startsWith('/api')) {
+  const originalUrl = req.headers['x-original-url'] || req.headers['x-vercel-original-url'];
+  console.log(`[Vercel Route Debug] ${req.method} ${req.url} | x-original-url: ${originalUrl} | x-matched-path: ${req.headers['x-matched-path']}`);
+
+  if (typeof originalUrl === 'string' && originalUrl.startsWith('/api')) {
     req.url = originalUrl;
   }
   next();
