@@ -649,10 +649,56 @@ export class App implements OnInit {
     this.searchJobs();
   }
 
+  getFallbackJobs(data: ReturnType<typeof this.profileForm.getRawValue>): ReturnType<typeof this.jobsList> {
+    return [
+      {
+        titulo: data.ultimoCargo || 'Analista de Operações',
+        empresa: 'TechCorp Brasil',
+        localizacao: data.cidadeEstado || 'São Paulo, SP',
+        tipoTrabalho: data.tipoVaga || 'Remoto',
+        requisitos: ['Experiência prévia na área', 'Comunicação assertiva', 'Foco em resultados'],
+        compatibilidade: 92,
+        explicacao: 'Vaga com alta compatibilidade pois suas habilidades batem com os principais requisitos, além da forte aderência em localização e modelo de trabalho.'
+      },
+      {
+        titulo: `Especialista em ${data.areaInteresse || 'Tecnologia'}`,
+        empresa: 'Inova Solutions',
+        localizacao: 'Remoto',
+        tipoTrabalho: 'Remoto',
+        requisitos: ['Inglês intermediário', 'Conhecimento avançado em ferramentas da área'],
+        compatibilidade: 65,
+        explicacao: 'Compatibilidade média: o cargo e modelo de trabalho estão alinhados, mas alguns requisitos como idioma podem precisar de evolução.'
+      },
+      {
+        titulo: `Assistente de ${data.areaInteresse || 'Administração'}`,
+        empresa: 'Global Corp',
+        localizacao: 'Rio de Janeiro, RJ',
+        tipoTrabalho: 'Presencial',
+        requisitos: ['Agilidade', 'Pacote Office'],
+        compatibilidade: 40,
+        explicacao: 'Baixa compatibilidade: o modelo de trabalho e a exigência de localidade não batem com seu perfil no momento.'
+      }
+    ];
+  }
+
+  goToJobsTab() {
+    if (this.jobsList().length === 0) {
+      if (this.profileForm.valid) {
+        this.searchJobs();
+      } else {
+        const formData = this.profileForm.getRawValue();
+        this.jobsList.set(this.getFallbackJobs(formData));
+        this.viewState.set('jobs');
+        this.showToast('Exibindo vagas sugeridas para o seu perfil. Você pode preencher os detalhes para resultados mais precisos!', 'info');
+      }
+    } else {
+      this.viewState.set('jobs');
+    }
+  }
+
   searchJobs() {
     if (!this.profileForm.valid) {
       this.profileForm.markAllAsTouched();
-      // Optional: alert('Preencha seu perfil primeiro para buscar vagas.');
       this.showToast('Por favor, preencha todos os campos obrigatórios do perfil antes de buscar vagas.', 'error');
       return; 
     }
@@ -677,35 +723,7 @@ export class App implements OnInit {
         },
         error: (err) => {
           console.error('Failed to search jobs via AI', err);
-          this.jobsList.set([
-            {
-              titulo: formData.ultimoCargo || 'Analista',
-              empresa: 'TechCorp Brasil',
-              localizacao: formData.cidadeEstado || 'São Paulo, SP',
-              tipoTrabalho: formData.tipoVaga || 'Remoto',
-              requisitos: ['Experiência prévia na área', 'Comunicação assertiva', 'Foco em resultados'],
-              compatibilidade: 92,
-              explicacao: 'Vaga com alta compatibilidade pois suas habilidades batem com os principais requisitos, além da forte aderência em localização e modelo de trabalho.'
-            },
-            {
-              titulo: `Especialista em ${formData.areaInteresse || 'Projetos'}`,
-              empresa: 'Inova Solutions',
-              localizacao: 'Remoto',
-              tipoTrabalho: 'Remoto',
-              requisitos: ['Inglês intermediário', 'Conhecimento avançado em ferramentas da área'],
-              compatibilidade: 65,
-              explicacao: 'Compatibilidade média: o cargo e modelo de trabalho estão alinhados, mas alguns requisitos como idioma podem precisar de evolução.'
-            },
-            {
-              titulo: `Assistente de ${formData.areaInteresse || 'Projetos'}`,
-              empresa: 'Global Corp',
-              localizacao: 'Rio de Janeiro, RJ (Presencial)',
-              tipoTrabalho: 'Presencial',
-              requisitos: ['Agilidade', 'Pacote Office'],
-              compatibilidade: 40,
-              explicacao: 'Baixa compatibilidade: o modelo de trabalho e a exigência de localidade não batem com seu perfil no momento.'
-            }
-          ]);
+          this.jobsList.set(this.getFallbackJobs(formData));
           this.isSubmitting.set(false);
           this.addXp(100);
           this.viewState.set('jobs');

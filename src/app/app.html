@@ -136,12 +136,12 @@
 
   <!-- 3. MAIN APP ROUTER CORE -->
   @else {
-    <div class="min-h-screen w-full flex items-center justify-center p-2 sm:p-4 md:p-8 print:p-0">
+    <div class="min-h-screen w-full flex items-center justify-center p-0 sm:p-4 md:p-8 print:p-0">
       
       <!-- Layout Card Wrapper containing both Steppers Onboarding and full-width dashboard portal -->
       <div [class]="(viewState() === 'onboarding-auth' || viewState() === 'upload' || viewState() === 'form') 
-        ? 'w-full max-w-5xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200/50 dark:border-zinc-800 rounded-3xl flex flex-col md:flex-row overflow-hidden min-h-[580px]' 
-        : 'w-full max-w-5xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200/50 dark:border-zinc-800 rounded-3xl flex flex-col overflow-hidden min-h-[620px]'" 
+        ? 'w-full max-w-5xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-201 dark:border-zinc-800 rounded-none sm:rounded-3xl flex flex-col md:flex-row overflow-hidden min-h-screen sm:min-h-[580px] max-h-screen sm:max-h-[90vh]' 
+        : 'w-full max-w-5xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-201 dark:border-zinc-800 rounded-none sm:rounded-3xl flex flex-col overflow-hidden min-h-screen sm:min-h-[620px] max-h-screen sm:max-h-[90vh]'" 
         id="main-frame-card">
         
         <!-- SIDEBAR ONLY: Visible for wizard forms steps -->
@@ -242,7 +242,7 @@
                 <button (click)="analyzeProfile()" [class]="viewState() === 'analysis' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
                   Análise
                 </button>
-                <button (click)="searchJobs()" [class]="viewState() === 'jobs' || viewState() === 'interviewPrep' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
+                <button (click)="goToJobsTab()" [class]="viewState() === 'jobs' || viewState() === 'interviewPrep' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
                   Vagas e IA
                 </button>
                 <button (click)="recommendCourses()" [class]="viewState() === 'courses' ? 'px-3 py-1 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white font-black shadow-xs rounded-lg text-xs transition-all border-none cursor-pointer' : 'px-3 py-1 text-zinc-400 dark:text-zinc-500 font-bold hover:text-zinc-800 dark:hover:text-zinc-300 text-xs transition-all border-none cursor-pointer'">
@@ -667,9 +667,14 @@
                       <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">space_dashboard</mat-icon>
                       <span>Voltar ao Painel</span>
                     </button>
-                    <button (click)="searchJobs()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none shadow-md shadow-indigo-600/15 cursor-pointer">
-                      <span>Buscar Vagas Compatíveis</span>
-                      <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">search</mat-icon>
+                    <button (click)="searchJobs()" [disabled]="isSubmitting()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 border-none shadow-md shadow-indigo-600/15 cursor-pointer disabled:opacity-60">
+                      @if (isSubmitting()) {
+                        <mat-icon class="animate-spin text-[14px] w-[14px] h-[14px] leading-[14px]">autorenew</mat-icon>
+                        <span>Buscando...</span>
+                      } @else {
+                        <span>Buscar Vagas Compatíveis</span>
+                        <mat-icon class="text-[14px] w-[14px] h-[14px] leading-[14px]">search</mat-icon>
+                      }
                     </button>
                   </div>
                 </div>
@@ -772,9 +777,14 @@
                       <mat-icon class="text-[14px] w-[14px] h-[14px]">space_dashboard</mat-icon>
                       <span>Voltar</span>
                     </button>
-                    <button (click)="searchJobs()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none shadow-md shadow-indigo-600/15 cursor-pointer">
-                      <span>Buscar Vagas</span>
-                      <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                    <button (click)="searchJobs()" [disabled]="isSubmitting()" type="button" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 border-none shadow-md shadow-indigo-600/15 cursor-pointer disabled:opacity-60">
+                      @if (isSubmitting()) {
+                        <mat-icon class="animate-spin text-[14px] w-[14px] h-[14px] leading-[14px]">autorenew</mat-icon>
+                        <span>Buscando...</span>
+                      } @else {
+                        <span>Buscar Vagas</span>
+                        <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                      }
                     </button>
                   </div>
                 </div>
@@ -984,9 +994,14 @@
                 <div class="flex justify-between items-center bg-zinc-100 dark:bg-zinc-900/60 p-4 border border-zinc-200/50 dark:border-zinc-850 rounded-2xl flex-wrap gap-4">
                   <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">&bull; Concluir certificados complementares desbloqueia conquistas.</span>
                   <div class="flex gap-2">
-                    <button (click)="searchJobs()" type="button" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer">
-                      <span>Buscar Vagas Compatíveis</span>
-                      <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                    <button (click)="searchJobs()" [disabled]="isSubmitting()" type="button" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 border-none cursor-pointer disabled:opacity-60">
+                      @if (isSubmitting()) {
+                        <mat-icon class="animate-spin text-[14px] w-[14px] h-[14px] leading-[14px]">autorenew</mat-icon>
+                        <span>Buscando...</span>
+                      } @else {
+                        <span>Buscar Vagas Compatíveis</span>
+                        <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                      }
                     </button>
                   </div>
                 </div>
@@ -1216,7 +1231,14 @@
 
                     <div class="pt-4 flex gap-2">
                       <button (click)="analyzeProfile()" type="button" class="px-3.5 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-850 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 cursor-pointer">Diagnóstico</button>
-                      <button (click)="searchJobs()" type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-600/10 cursor-pointer border-none shrink-0 border-transparent">Próxima Vaga &rarr;</button>
+                      <button (click)="searchJobs()" [disabled]="isSubmitting()" type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-600/10 cursor-pointer border-none shrink-0 border-transparent disabled:opacity-60 flex items-center gap-1">
+                        @if (isSubmitting()) {
+                          <mat-icon class="animate-spin text-[12px] w-[12px] h-[12px]">autorenew</mat-icon>
+                          <span>Buscando...</span>
+                        } @else {
+                          <span>Próxima Vaga &rarr;</span>
+                        }
+                      </button>
                     </div>
                   </div>
 
@@ -1290,9 +1312,14 @@
                     <button (click)="analyzeProfile()" type="button" class="px-4 py-2 hover:bg-zinc-150 hover:dark:bg-zinc-850 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all border border-zinc-200 dark:border-zinc-800 cursor-pointer bg-white dark:bg-zinc-900 flex items-center gap-1">
                       <mat-icon class="text-[14px] w-[14px] h-[14px]">insights</mat-icon> IA Diagnóstico
                     </button>
-                    <button (click)="searchJobs()" type="button" class="px-5 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1 border-none cursor-pointer">
-                      <span>Buscar Vagas</span>
-                      <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                    <button (click)="searchJobs()" [disabled]="isSubmitting()" type="button" class="px-5 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 border-none cursor-pointer disabled:opacity-60">
+                      @if (isSubmitting()) {
+                        <mat-icon class="animate-spin text-[14px] w-[14px] h-[14px] leading-[14px]">autorenew</mat-icon>
+                        <span>Buscando...</span>
+                      } @else {
+                        <span>Buscar Vagas</span>
+                        <mat-icon class="text-[14px] w-[14px] h-[14px]">search</mat-icon>
+                      }
                     </button>
                   </div>
                 </div>
@@ -1302,6 +1329,32 @@
 
           </div>
         </div>
+
+        <!-- Mobile Bottom Bar (visible only on mobile devices) -->
+        @if (viewState() === 'dashboard' || viewState() === 'resume' || viewState() === 'analysis' || viewState() === 'jobs' || viewState() === 'courses' || viewState() === 'interviewPrep' || viewState() === 'success') {
+          <nav class="md:hidden flex items-center justify-around border-t border-zinc-200/50 dark:border-zinc-850 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md py-2.5 px-2 shrink-0 z-20 sticky bottom-0 print:hidden shadow-lg w-full">
+            <button (click)="goDashboard()" [class]="viewState() === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold scale-102' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-350'" class="flex flex-col items-center gap-0.5 flex-1 bg-transparent border-none py-1 cursor-pointer transition-all focus:outline-none">
+              <mat-icon class="text-xl block">space_dashboard</mat-icon>
+              <span class="text-[9px] font-extrabold tracking-tight">Painel</span>
+            </button>
+            <button (click)="viewResume()" [class]="viewState() === 'resume' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold scale-102' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-350'" class="flex flex-col items-center gap-0.5 flex-1 bg-transparent border-none py-1 cursor-pointer transition-all focus:outline-none">
+              <mat-icon class="text-xl block">article</mat-icon>
+              <span class="text-[9px] font-extrabold tracking-tight">Currículo</span>
+            </button>
+            <button (click)="analyzeProfile()" [class]="viewState() === 'analysis' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold scale-102' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-350'" class="flex flex-col items-center gap-0.5 flex-1 bg-transparent border-none py-1 cursor-pointer transition-all focus:outline-none">
+              <mat-icon class="text-xl block">insights</mat-icon>
+              <span class="text-[9px] font-extrabold tracking-tight">Análise</span>
+            </button>
+            <button (click)="goToJobsTab()" [class]="viewState() === 'jobs' || viewState() === 'interviewPrep' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold scale-102' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-350'" class="flex flex-col items-center gap-0.5 flex-1 bg-transparent border-none py-1 cursor-pointer transition-all focus:outline-none">
+              <mat-icon class="text-xl block">search</mat-icon>
+              <span class="text-[9px] font-extrabold tracking-tight">Vagas e IA</span>
+            </button>
+            <button (click)="recommendCourses()" [class]="viewState() === 'courses' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold scale-102' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-350'" class="flex flex-col items-center gap-0.5 flex-1 bg-transparent border-none py-1 cursor-pointer transition-all focus:outline-none">
+              <mat-icon class="text-xl block">school</mat-icon>
+              <span class="text-[9px] font-extrabold tracking-tight">Cursos</span>
+            </button>
+          </nav>
+        }
 
       </div>
     </div>
